@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model Organization {
+  id        String    @id @default(cuid())
+  name      String
+  projects  Project[]
+  users     User[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  name           String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  wallets        Wallet[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  address   String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id             String       @id @default(cuid())
+  name           String
+  repository     String?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  contracts      Contract[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Contract {
+  id          String       @id @default(cuid())
+  name        String
+  projectId   String
+  project     Project      @relation(fields: [projectId], references: [id])
+  circuits    Circuit[]
+  deployments Deployment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Circuit {
+  id         String      @id @default(cuid())
+  name       String
+  contractId String
+  contract   Contract    @relation(fields: [contractId], references: [id])
+  benchmarks Benchmark[]
+  createdAt  DateTime    @default(now())
+}
+
+model CIRun {
+  id        String   @id @default(cuid())
+  commitSha String
+  status    String   // pending, success, failed
+  duration  Int?     // in seconds
+  logsUrl   String?
+  createdAt DateTime @default(now())
+}
+
+model Benchmark {
+  id            String   @id @default(cuid())
+  circuitId     String
+  circuit       Circuit  @relation(fields: [circuitId], references: [id])
+  commitSha     String
+  provingTimeMs Int
+  createdAt     DateTime @default(now())
+}
+
+model Deployment {
+  id         String   @id @default(cuid())
+  network    String   @default("preprod")
+  txHash     String
+  status     String   // pending, confirmed, failed
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id])
+  createdAt  DateTime @default(now())
+}
