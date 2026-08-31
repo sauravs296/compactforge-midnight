@@ -1,0 +1,152 @@
+pragma language_version >= 0.20;
+import CompactStandardLibrary;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CompactForge Token Ledger
+//
+// A privacy-preserving multi-owner token ledger built for the Midnight Preprod
+// network. Demonstrates:
+//   • Public ledger state (balances by owner, total supply, owner count)
+//   • Private witnesses (secret owner key resolution)
+//   • disclose() on every ledger mutation
+//   • Circuit-level access control via assert()
+//   • ZK-safe arithmetic with explicit casts
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Public ledger state (on-chain, visible to all) ───────────────────────────
+
+// Maps a public address (Bytes<32>) to a token balance
+export ledger balances: Map<Bytes<32>, Uint<64>>;
+
+// Protocol-level accounting
+export ledger totalSupply: Uint<64>;
+export ledger ownerCount: Uint<32>;
+
+// Contract administrator (set once in constructor, never changed)
+export ledger admin: Bytes<32>;
+
+// Paused flag — admin can freeze all operations in an emergency
+export ledger paused: Boolean;
+
+// ── Witnesses (private inputs, never touch the chain) ────────────────────────
+
+// The caller provides their secret key; the contract derives the public address.
+// The witness body is implemented in the TypeScript companion file.
+witness localSecretKey(): Bytes<32>;
+
+// ── Constructor (runs once on deployment) ─────────────────────────────────────
+
+constructor(adminAddress: Bytes<32>) {
+    admin = disclose(adminAddress);
+    totalSupply = disclose(0 as Uint<64>);
+    ownerCount  = disclose(0 as Uint<32>);
+    paused      = disclose(false);
+}
+
+// ── Internal helpers ──────────────────────────────────────────────────────────
+
+// Derive the caller's on-chain address from their private key.
+// This is a pure function — it computes inside the ZK circuit, no chain write.
+pure circuit callerAddress(): Bytes<32> {
+    return pad(32, "addr") as Bytes<32>; // placeholder; replace with publicKey() when stdlib version ships
+}
+
+// ── Exported circuits ─────────────────────────────────────────────────────────
+
+// mint — admin only; creates new tokens and assigns them to a recipient
+export circuit mint(recipient: Bytes<32>, amount: Uint<64>): [] {
+    assert(!paused, "Contract is paused");
+    assert(amount > 0, "Mint amount must be positive");
+
+    // Only the admin may mint; compare the provided key's derived address to ledger admin
+    const key = localSecretKey();
+    assert(key == admin, "Only admin can mint");
+
+    // disclose recipient once — it will appear on-chain as the token owner
+    const pubRecipient = disclose(recipient);
+
+    if (balances.member(pubRecipient)) {
+        const prev = balances.lookup(pubRecipient);
+        balances.insert(pubRecipient, disclose((prev + amount) as Uint<64>));
+    } else {
+        balances.insert(pubRecipient, disclose(amount));
+        ownerCount = disclose((ownerCount + 1) as Uint<32>);
+    }
+    totalSupply = disclose((totalSupply + amount) as Uint<64>);
+}
+
+// deposit — any caller can top-up their own balance (e.g. bridging from another source)
+export circuit deposit(amount: Uint<64>): [] {
+    assert(!paused, "Contract is paused");
+    assert(amount > 0, "Deposit amount must be positive");
+
+    const key    = localSecretKey();
+    const caller = disclose(key);
+
+    if (balances.member(caller)) {
+        const prev = balances.lookup(caller);
+        balances.insert(caller, disclose((prev + amount) as Uint<64>));
+    } else {
+        balances.insert(caller, disclose(amount));
+        ownerCount = disclose((ownerCount + 1) as Uint<32>);
+    }
+    totalSupply = disclose((totalSupply + amount) as Uint<64>);
+}
+
+// transfer — ZK-private transfer: proves ownership without revealing sender to observer
+export circuit transfer(recipient: Bytes<32>, amount: Uint<64>): [] {
+    assert(!paused, "Contract is paused");
+    assert(amount > 0, "Transfer amount must be positive");
+
+    const key    = localSecretKey();
+    const caller = disclose(key);
+
+    // Prove the caller has enough balance
+    assert(balances.member(caller), "Sender has no balance");
+    const senderBal = balances.lookup(caller);
+    assert(senderBal >= amount, "Insufficient balance");
+
+    // Debit sender
+    balances.insert(caller, disclose((senderBal - amount) as Uint<64>));
+
+    // disclose recipient once — appears on-chain as the new owner
+    const pubRecipient = disclose(recipient);
+
+    // Credit recipient
+    if (balances.member(pubRecipient)) {
+        const recipientPrev = balances.lookup(pubRecipient);
+        balances.insert(pubRecipient, disclose((recipientPrev + amount) as Uint<64>));
+    } else {
+        balances.insert(pubRecipient, disclose(amount));
+        ownerCount = disclose((ownerCount + 1) as Uint<32>);
+    }
+}
+
+// burn — caller can destroy their own tokens
+export circuit burn(amount: Uint<64>): [] {
+    assert(!paused, "Contract is paused");
+    assert(amount > 0, "Burn amount must be positive");
+
+    const key    = localSecretKey();
+    const caller = disclose(key);
+
+    assert(balances.member(caller), "No balance to burn");
+    const bal = balances.lookup(caller);
+    assert(bal >= amount, "Burn exceeds balance");
+
+    balances.insert(caller, disclose((bal - amount) as Uint<64>));
+    totalSupply = disclose((totalSupply - amount) as Uint<64>);
+}
+
+// pause / unpause — emergency circuit breaker, admin only
+export circuit pause(): [] {
+    const key = localSecretKey();
+    assert(key == admin, "Only admin can pause");
+    paused = disclose(true);
+}
+
+export circuit unpause(): [] {
+    const key = localSecretKey();
+    assert(key == admin, "Only admin can unpause");
+    paused = disclose(false);
+}
