@@ -180,14 +180,15 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
       // ── 2. Build Midnight SDK Providers ───────────────────────────────
       setState({ phase: "building_providers" });
 
-      // Dynamic imports — avoids SSR and bundling issues
       const [
-        { deployContract },
+        { createUnprovenDeployTx, submitTxAsync },
         { setNetworkId },
+        { CompiledContract },
         contractModule,
       ] = await Promise.all([
         import("@midnight-ntwrk/midnight-js-contracts"),
         import("@midnight-ntwrk/midnight-js-network-id"),
+        import("@midnight-ntwrk/compact-js"),
         // Import the compiled contract relative to this file so webpack bundles it
         // and correctly resolves its internal bare imports (like compact-runtime).
         import("../../contracts/token_ledger/build/token_ledger/contract/index.js"),
@@ -253,28 +254,29 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
       // This is the call that triggers the wallet popup for approval!
       setState({ phase: "deploying" });
 
-      // deployContract(providers, options) — the providers include
-      // walletProvider, publicDataProvider, privateStateProvider, zkConfigProvider.
-      // Casting through unknown avoids complex generic inference issues.
-      type DeployResult = {
-        deployTxData: {
-          public: {
-            contractAddress: { toString(): string };
-          };
-          txId?: string;
-        };
-      };
+      // Build the properly typed CompiledContract handle instead of passing the namespace object
+      const compiledContract = CompiledContract.make(
+        "token_ledger",
+        contractModule.Contract
+      ).pipe(
+        CompiledContract.withVacantWitnesses
+      ) as unknown;
 
-      const deployedContract = await (deployContract as unknown as (
-        providers: unknown,
-        options: unknown
-      ) => Promise<DeployResult>)(providers, {
-        compiledContract: contractModule,
-        // token_ledger requires no constructor args; admin is derived from localSecretKey witness
-      });
+      const signingKey = crypto.getRandomValues(new Uint8Array(32));
 
-      const contractAddress = deployedContract.deployTxData.public.contractAddress.toString();
-      const txId = deployedContract.deployTxData.txId ?? contractAddress;
+      // Use low-level deploy pattern to avoid watchForTxData (which breaks when mocked)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const deployTxData = await (createUnprovenDeployTx as any)(
+        { zkConfigProvider, walletProvider },
+        { compiledContract, args: [], signingKey }
+      );
+
+      const contractAddress = deployTxData.public.contractAddress.toString();
+      const txId = deployTxData.txId ?? contractAddress; // the wallet plugin sometimes omits txId until submission
+
+      // Submit the transaction (this actually prompts the wallet if not already done)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (submitTxAsync as any)(providers, { unprovenTx: deployTxData.private.unprovenTx });
 
       // ── 4. Record in Neon DB ───────────────────────────────────────────
       setState({ phase: "recording" });
