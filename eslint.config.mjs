@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "contracts/**",
+    // Node.js scripts — not linted as TypeScript
+    "scripts/**",
   ]),
 ]);
 

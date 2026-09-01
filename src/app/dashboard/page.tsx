@@ -10,7 +10,8 @@ export default async function DashboardOverview() {
   const contractsCount = await prisma.contract.count();
   const circuitsCount = await prisma.circuit.count();
   const ciRunsCount = await prisma.cIRun.count();
-  
+  const deploymentsCount = await prisma.deployment.count();
+  const confirmedDeployments = await prisma.deployment.count({ where: { status: "confirmed" } });
   const recentRuns = await prisma.cIRun.findMany({
     orderBy: { createdAt: 'desc' },
     take: 3,
@@ -75,8 +76,8 @@ export default async function DashboardOverview() {
             <Rocket className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">—</div>
-            <p className="text-xs text-muted-foreground">Pending 1AM wallet deploy</p>
+            <div className="text-2xl font-bold">{deploymentsCount}</div>
+            <p className="text-xs text-muted-foreground">{confirmedDeployments} confirmed on Preprod</p>
           </CardContent>
         </Card>
         <Card>

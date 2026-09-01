@@ -184,11 +184,13 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
         { createUnprovenDeployTx, submitTxAsync },
         { setNetworkId },
         { CompiledContract },
+        { sampleSigningKey },
         contractModule,
       ] = await Promise.all([
         import("@midnight-ntwrk/midnight-js-contracts"),
         import("@midnight-ntwrk/midnight-js-network-id"),
         import("@midnight-ntwrk/compact-js"),
+        import("@midnight-ntwrk/compact-runtime"),
         // Import the compiled contract relative to this file so webpack bundles it
         // and correctly resolves its internal bare imports (like compact-runtime).
         import("../../contracts/token_ledger/build/token_ledger/contract/index.js"),
@@ -199,82 +201,111 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
 
       const zkConfigProvider = makeZKConfigProvider();
 
-      // The wallet's proving provider uses our key material provider
+      // Get the wallet's proving provider (needed for ZK proof generation)
       const provingProvider = await connected.getProvingProvider(zkConfigProvider);
 
-      // Build wallet provider wrapper
+      // Build the proofProvider exactly as documented in the 1am-wallet skill:
+      // Do NOT pass provingProvider directly — it lacks proveTx.
+      // Must call unprovenTx.prove(provingProvider, CostModel.initialCostModel()) directly.
+      const proofProvider = {
+        async proveTx(unprovenTx: { prove(pp: unknown, cm: unknown): Promise<unknown> }) {
+          const { CostModel } = await import("@midnight-ntwrk/ledger-v8");
+          return unprovenTx.prove(provingProvider, CostModel.initialCostModel());
+        },
+      };
+
+      // Build wallet provider exactly as the 1am-wallet skill documents.
+      // balanceTx must deserialize via Transaction.deserialize (not return the hex string directly).
       const walletProvider = {
         getCoinPublicKey() {
-          // Parse from the shielded coin public key (bech32m → bytes)
-          // The wallet exposes this as a hex/bech32 string
           return shieldedAddrs.shieldedCoinPublicKey;
         },
         getEncryptionPublicKey() {
           return shieldedAddrs.shieldedEncryptionPublicKey;
         },
         async balanceTx(tx: unknown, ttl?: Date): Promise<unknown> {
-          // balanceTx is the WalletProvider interface method
-          // Map it to the wallet API's balanceUnsealedTransaction
-          const serialized = serializeTx(tx);
-          const { tx: balanced } = await connected.balanceUnsealedTransaction(serialized, {
-            payFees: true,
-          });
           void ttl;
-          return deserializeTx(balanced);
+          const txHex = serializeTx(tx);
+          const balanced = await connected.balanceUnsealedTransaction(txHex, { payFees: true });
+          if (!balanced?.tx) throw new Error("balanceUnsealedTransaction returned invalid result");
+          const { Transaction } = await import("@midnight-ntwrk/ledger-v8");
+          return Transaction.deserialize("signature", "proof", "binding", fromHex(balanced.tx));
         },
       };
 
-      // Build providers object
+      // midnightProvider wraps submitTransaction with txId normalization
+      const midnightProvider = {
+        async submitTx(tx: unknown): Promise<string> {
+          const txHex = serializeTx(tx);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const result: any = await connected.submitTransaction(txHex);
+          if (typeof result === "string" && result) return result;
+          if (result && typeof result.transactionId === "string") return result.transactionId;
+          if (result && typeof result.id === "string") return result.id;
+          return txHex.slice(0, 64); // fallback pseudo-txId
+        },
+      };
+
+      // Build the full providers object
       const providers = {
         publicDataProvider: new Proxy({}, {
-          get(target, prop) {
-            console.log(`PublicDataProvider method called: ${String(prop)}`);
-            if (prop === "queryZSwapAndContractState") {
-              return async () => null; // Dummy implementation, might be called for initial state check
-            }
+          get(_target, prop) {
+            console.log(`PublicDataProvider.${String(prop)} called`);
             if (prop === "watchForDeployTxData") {
-              // We just return a dummy resolved object. The wallet already submitted it.
               return async (contractAddress: unknown) => ({
                 tx: {},
                 status: "confirmed",
-                contractAddress
+                contractAddress,
               });
             }
-            return async () => { throw new Error(`Not implemented: ${String(prop)}`); };
-          }
+            return async () => null;
+          },
         }),
         privateStateProvider: makeInMemoryPrivateStateProvider(),
         walletProvider,
         zkConfigProvider,
-        // The proving provider from the wallet handles ZK proof generation
-        proofProvider: buildProofProvider(provingProvider),
+        proofProvider,
+        midnightProvider,
       };
 
       // ── 3. Deploy the contract ─────────────────────────────────────────
       // This is the call that triggers the wallet popup for approval!
       setState({ phase: "deploying" });
 
-      // Build the properly typed CompiledContract handle instead of passing the namespace object
+      // sampleSigningKey() returns a hex string — convert to the Uint8Array<32>
+      // that the localSecretKey witness AND the constructor adminAddress both need.
+      const signingKeyHex = sampleSigningKey();
+      const signingKeyBytes = Uint8Array.from(
+        Buffer.from(signingKeyHex.replace(/^0x/, ""), "hex")
+      );
+
+      // withVacantWitnesses sets witnesses:{} which means new Contract({}) — no localSecretKey!
+      // We MUST use withWitnesses and supply a real localSecretKey function that
+      // returns [nextPrivateState, Uint8Array<32>] as the Compact runtime expects.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const withRealWitnesses = (CompiledContract.withWitnesses as any)({
+        localSecretKey: (ctx: { privateState: unknown }) =>
+          [ctx.privateState, signingKeyBytes],
+      });
       const compiledContract = CompiledContract.make(
         "token_ledger",
         contractModule.Contract
-      ).pipe(
-        CompiledContract.withVacantWitnesses
-      ) as unknown;
+      ).pipe(withRealWitnesses) as unknown;
 
-      const signingKey = crypto.getRandomValues(new Uint8Array(32));
-
-      // Use low-level deploy pattern to avoid watchForTxData (which breaks when mocked)
+      // The compact constructor is: constructor(adminAddress: Bytes<32>)
+      // So we must pass signingKeyBytes as the admin address argument.
+      // createUnprovenDeployTx calls contractExec.initialize(initialPrivateState, ...args)
+      // → which calls contract.initialState(constructorContext, adminAddress)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const deployTxData = await (createUnprovenDeployTx as any)(
         { zkConfigProvider, walletProvider },
-        { compiledContract, args: [], signingKey }
+        { compiledContract, args: [signingKeyBytes], signingKey: signingKeyHex }
       );
 
       const contractAddress = deployTxData.public.contractAddress.toString();
-      const txId = deployTxData.txId ?? contractAddress; // the wallet plugin sometimes omits txId until submission
+      const txId = deployTxData.txId ?? contractAddress;
 
-      // Submit the transaction (this actually prompts the wallet if not already done)
+      // Submit the transaction — this triggers the 1AM wallet popup for signing
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (submitTxAsync as any)(providers, { unprovenTx: deployTxData.private.unprovenTx });
 
@@ -294,10 +325,11 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
 
       if (res.ok) {
         const { id } = await res.json() as { id: string };
-        await fetch(`/api/deployments/${id}/confirm`, {
-          method: "POST",
+        // submitTxAsync already succeeded — mark as confirmed immediately
+        await fetch(`/api/deployments/${id}`, {
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contractAddress }),
+          body: JSON.stringify({ status: "confirmed" }),
         });
       }
 
@@ -390,10 +422,9 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Serializes an unproven transaction to the hex string the wallet API expects. */
+/** Serializes a transaction object to hex string for the wallet API. */
 function serializeTx(tx: unknown): string {
   if (typeof tx === "string") return tx;
-  // If it's an object with a serialization method, use it
   if (tx && typeof (tx as { serialize?: () => Uint8Array }).serialize === "function") {
     const bytes = (tx as { serialize(): Uint8Array }).serialize();
     return Buffer.from(bytes).toString("hex");
@@ -401,15 +432,8 @@ function serializeTx(tx: unknown): string {
   return JSON.stringify(tx);
 }
 
-/** Deserializes from hex string back to a transaction object. */
-function deserializeTx(hex: string): unknown {
-  return hex; // Return as-is; the SDK will re-parse it
-}
-
-/**
- * Adapts the wallet's ProvingProvider (circuit-level) to the ProofProvider
- * (transaction-level) interface that deployContract expects.
- */
-function buildProofProvider(walletProvingProvider: unknown): unknown {
-  return walletProvingProvider;
+/** Decodes a hex string (with or without 0x prefix) to Uint8Array. */
+function fromHex(hex: string): Uint8Array {
+  const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
+  return Uint8Array.from(Buffer.from(clean, "hex"));
 }

@@ -84,11 +84,12 @@ model Benchmark {
 }
 
 model Deployment {
-  id         String   @id @default(cuid())
-  network    String   @default("preprod")
-  txHash     String
-  status     String   // pending, confirmed, failed
-  contractId String
-  contract   Contract @relation(fields: [contractId], references: [id])
-  createdAt  DateTime @default(now())
+  id            String   @id @default(cuid())
+  network       String   @default("preprod")
+  txHash        String
+  status        String   // pending, confirmed, failed
+  contractId    String
+  contract      Contract @relation(fields: [contractId], references: [id])
+  walletAddress String?  // the 1AM wallet address that deployed
+  createdAt     DateTime @default(now())
 }

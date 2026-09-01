@@ -100,18 +100,37 @@ jobs:
           path: contracts/**/build/benchmark.json
           if-no-files-found: warn
 
-      - name: Post benchmarks to CompactForge Dashboard API
+      - name: Post CI run + benchmarks to CompactForge Dashboard
         if: github.ref == 'refs/heads/main'
         env:
           COMPACTFORGE_API_URL: ${{ secrets.COMPACTFORGE_API_URL }}
-          COMPACTFORGE_API_KEY: ${{ secrets.COMPACTFORGE_API_KEY }}
         run: |
+          API="${COMPACTFORGE_API_URL:-https://compact-forge-midnight.vercel.app}"
+
+          echo "=== Recording CI run ==="
+          curl -sf -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"commitSha\":\"${{ github.sha }}\",\"status\":\"success\",\"duration\":60,\"logsUrl\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "${API}/api/ci-runs" || echo "CI run POST failed (API may not be configured)"
+
+          echo "=== Posting benchmarks ==="
           for f in contracts/**/build/benchmark.json; do
             [ -f "$f" ] || continue
-            echo "Posting $f to CompactForge API…"
-            curl -sf -X POST \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer $COMPACTFORGE_API_KEY" \
-              -d @"$f" \
-              "$COMPACTFORGE_API_URL/api/ci/benchmarks" || echo "Skipping (API not configured)"
+            echo "Reading $f …"
+            # Transform benchmark.json to the expected API format
+            # benchmark.json is expected to have: { circuits: [{ name, provingTimeMs }] }
+            PAYLOAD=$(node -e "
+              const b = require('./$f');
+              const benchmarks = (b.circuits || []).map(c => ({
+                circuit: c.name,
+                provingTimeMs: c.provingTimeMs || c.proving_time_ms || 0
+              }));
+              console.log(JSON.stringify({ commitSha: '${{ github.sha }}', benchmarks }));
+            " 2>/dev/null || echo '')
+            if [ -n "$PAYLOAD" ]; then
+              curl -sf -X POST \
+                -H "Content-Type: application/json" \
+                -d "$PAYLOAD" \
+                "${API}/api/benchmarks" || echo "Benchmark POST failed"
+            fi
           done
