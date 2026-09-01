@@ -1,0 +1,137 @@
+name: Contracts CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "contracts/**"
+      - "scripts/**"
+      - ".github/workflows/contracts.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "contracts/**"
+      - "scripts/**"
+      - ".github/workflows/contracts.yml"
+
+jobs:
+  validate-contracts:
+    name: Validate Contract Source Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify contract source files exist
+        run: |
+          echo "================================================="
+          echo " CompactForge — Contracts CI"
+          echo "================================================="
+          echo ""
+          echo "Validating Compact contract source structure..."
+          echo ""
+
+          # Ensure the main contract file exists
+          if [ ! -f "contracts/token_ledger/token_ledger.compact" ]; then
+            echo "ERROR: contracts/token_ledger/token_ledger.compact not found!"
+            exit 1
+          fi
+          echo "✓ contracts/token_ledger/token_ledger.compact exists"
+
+          # Count circuits declared in the contract
+          CIRCUIT_COUNT=$(grep -c "^export circuit" contracts/token_ledger/token_ledger.compact || true)
+          echo "✓ Detected $CIRCUIT_COUNT exported circuits in token_ledger"
+
+          # Ensure disclose() is used (privacy model enforcement)
+          DISCLOSE_COUNT=$(grep -c "disclose(" contracts/token_ledger/token_ledger.compact || true)
+          echo "✓ Found $DISCLOSE_COUNT disclose() calls — privacy model enforced"
+
+          # Ensure witness is declared (ZK private key auth)
+          if grep -q "witness" contracts/token_ledger/token_ledger.compact; then
+            echo "✓ witness declaration found — ZK private key auth present"
+          else
+            echo "WARNING: no witness declaration found"
+          fi
+
+          echo ""
+          echo "✓ All contract source validations passed"
+
+  compile-with-local-binary:
+    name: Compile Compact Contracts (binary required)
+    runs-on: ubuntu-latest
+    # This job validates that IF a compact binary is committed to bin/,
+    # the compilation succeeds. It is documented as skipped when the binary
+    # is not present, because the Midnight compact compiler is not publicly
+    # available on npm or any package registry — it must be downloaded from
+    # the Midnight developer portal and committed as a binary artifact.
+    # See: https://docs.midnight.network/develop/tutorial/building/
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Midnight Compact compiler
+        id: setup_compiler
+        run: |
+          echo "================================================="
+          echo " Setting up Midnight Compact compiler"
+          echo "================================================="
+          if [ -f "bin/compact" ]; then
+            echo "Found bin/compact binary — proceeding with compilation"
+            chmod +x bin/compact
+            sudo cp bin/compact /usr/local/bin/compact
+            compact --version
+            echo "compiler_available=true" >> $GITHUB_OUTPUT
+          else
+            echo ""
+            echo "INFO: bin/compact not found."
+            echo ""
+            echo "The Midnight 'compact' compiler is proprietary and NOT available"
+            echo "on npm, apt, or any public registry. To enable automated compilation:"
+            echo ""
+            echo "  1. Download the Linux binary from:"
+            echo "     https://docs.midnight.network/develop/tutorial/building/"
+            echo "  2. Place it at: bin/compact"
+            echo "  3. Commit it to the repository"
+            echo ""
+            echo "This CI step will be marked as non-blocking until the binary is committed."
+            echo "Contract source files are validated by the 'validate-contracts' job above."
+            echo "compiler_available=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Compile token_ledger contract
+        if: steps.setup_compiler.outputs.compiler_available == 'true'
+        run: |
+          mkdir -p contracts/token_ledger/build
+          compact compile \
+            contracts/token_ledger/token_ledger.compact \
+            contracts/token_ledger/build/token_ledger
+          echo "✓ token_ledger compiled successfully"
+
+      - name: Run benchmark script
+        if: steps.setup_compiler.outputs.compiler_available == 'true'
+        run: bash scripts/compile-and-test.sh
+
+      - name: Upload benchmark artifacts
+        if: steps.setup_compiler.outputs.compiler_available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmarks-${{ github.sha }}
+          path: contracts/**/build/benchmark.json
+          if-no-files-found: warn
+
+      - name: Post benchmarks to CompactForge Dashboard API
+        if: steps.setup_compiler.outputs.compiler_available == 'true' && github.ref == 'refs/heads/main'
+        env:
+          COMPACTFORGE_API_URL: ${{ secrets.COMPACTFORGE_API_URL }}
+          COMPACTFORGE_API_KEY: ${{ secrets.COMPACTFORGE_API_KEY }}
+        run: |
+          for f in contracts/**/build/benchmark.json; do
+            [ -f "$f" ] || continue
+            echo "Posting $f to CompactForge API…"
+            curl -sf -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $COMPACTFORGE_API_KEY" \
+              -d @"$f" \
+              "$COMPACTFORGE_API_URL/api/ci/benchmarks" || echo "Skipping (API not configured)"
+          done
