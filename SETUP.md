@@ -1,141 +1,62 @@
-# SETUP.md — CompactForge Local Development
+# 🛠️ SETUP GUIDE
 
-This guide gets you from zero to a running CompactForge dev environment targeting the **Midnight Preprod network**.
+Welcome to the **CompactForge** setup guide! Follow these instructions to clone, build, and run the project locally. Because of the nature of Zero-Knowledge proving keys, **deploying and interacting with smart contracts requires a local environment.**
 
 ## Prerequisites
-
-| Tool | Purpose |
-|---|---|
-| Windows 10/11 with WSL2 Ubuntu | Compact compiler lives in Linux |
-| Node.js v20 LTS | Next.js app |
-| Git | Version control |
-| Neon account | Serverless Postgres (free tier works) |
-| 1AM Wallet browser extension | Signing Preprod transactions |
-| GitHub account | CI/CD |
-| Vercel account | Hosting |
+Before you begin, ensure you have the following installed on your machine:
+- **Node.js** (v20.x or higher)
+- **npm** (v10.x or higher)
+- **Git**
+- **1AM Wallet Extension** (installed in your browser and connected to the Preprod network)
 
 ---
 
-## 1. Clone the Repository
+## 🚀 Installation & Local Setup
 
+### 1. Clone the Repository
+Clone the repository to your local machine and navigate into the project directory:
 ```bash
-git clone https://github.com/<your-username>/CompactForge.git
-cd CompactForge
+git clone https://github.com/sauravs296/compactforge-midnight.git
+cd compactforge-midnight
+```
+
+### 2. Install Dependencies
+Install all the required NPM packages (including the Midnight JS SDK and UI libraries):
+```bash
 npm install
 ```
 
----
-
-## 2. Environment Variables
-
-Copy the example file and fill in your Neon credentials:
-
-```bash
-cp .env.local.example .env
+### 3. Environment Variables
+Create a `.env` file in the root directory and add the following connection strings for the Neon PostgreSQL database. (If you are a judge, you can use the production URLs provided in your submission details):
+```env
+DATABASE_URL="postgresql://user:password@endpoint.neon.tech/neondb?pgbouncer=true"
+DIRECT_URL="postgresql://user:password@endpoint.neon.tech/neondb"
 ```
 
-| Variable | Where to get it |
-|---|---|
-| `DATABASE_URL` | Neon → your project → **Pooled connection string** |
-| `DIRECT_URL` | Neon → your project → **Direct connection string** |
-| `NEXT_PUBLIC_MIDNIGHT_PREPROD_RPC` | `https://rpc.preprod.midnight.network` |
-| `NEXT_PUBLIC_MIDNIGHT_PREPROD_INDEXER` | `https://indexer.preprod.midnight.network/api/v4/graphql` |
-
----
-
-## 3. Database Setup
-
+### 4. Sync the Database
+Generate the Prisma client and push the schema to ensure your database is up to date:
 ```bash
 npx prisma generate
 npx prisma db push
 ```
 
-Optionally seed demo data:
-```bash
-npx prisma db seed
-```
-
-Inspect with:
-```bash
-npx prisma studio
-```
-
----
-
-## 4. Run the App
-
+### 5. Start the Development Server
+Launch the Next.js development server:
 ```bash
 npm run dev
 ```
-
-Visit `http://localhost:3000`. The landing page loads without a wallet. Connect 1AM to access the full dashboard.
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## 5. Compile the Compact Contract (WSL)
-
-Open your WSL Ubuntu terminal and run:
-
+## 🧪 Running the Test Suite
+CompactForge includes a robust unit testing suite using `vitest` that tests API routes, SDK configurations, and core utilities.
 ```bash
-cd /mnt/d/Coding\ Only/Projects/MIDNIGHT/SAURAV/CompactForge
+# Run tests once
+npm run test
 
-# Compile — downloads public ZK parameters if missing (~24 KB for k=7)
-compact compile \
-  contracts/token_ledger/token_ledger.compact \
-  contracts/token_ledger/build/token_ledger
+# Run tests in watch mode
+npm run test:watch
 ```
 
-Expected output:
-```
-Compiling 2 circuits:
-  circuit "deposit"  (k=7, rows=92)
-  circuit "transfer" (k=9, rows=114)
-  circuit "mint"     (k=9, rows=128)
-  circuit "burn"     (k=8, rows=105)
-  circuit "pause"    (k=7, rows=88)
-  circuit "unpause"  (k=7, rows=88)
-Overall progress [====================] 6/6
-```
-
-This produces prover/verifier keys in `contracts/token_ledger/build/token_ledger/keys/`.
-
----
-
-## 6. Run the CI Pipeline Locally
-
-```bash
-# Inside WSL:
-bash scripts/compile-and-test.sh
-```
-
-This mirrors what `contracts.yml` GitHub Actions runs on every push to `main`.
-
----
-
-## 7. Connect 1AM Wallet on Preprod
-
-1. Install the **1AM Wallet** browser extension.
-2. Switch the wallet network to **Preprod**.
-3. Get test funds from the Midnight Preprod faucet.
-4. Click **Connect Wallet** in the CompactForge dashboard.
-
----
-
-## 8. Run Tests
-
-```bash
-npm test          # Vitest suite — wallet.test.ts + utils
-npm run build     # Final production build check
-```
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| `compact: command not found` in WSL | Ensure the Compact toolchain is on your `$PATH` — add the bin directory to `~/.bashrc` |
-| `prisma generate` fails | Run `npm install` first; Prisma 7 needs `@prisma/adapter-pg` |
-| Wallet won't connect | Check extension is set to **Preprod**, not Mainnet or Undeployed |
-| Build fails with WASM errors | Midnight SDK WASM files require Node 20 — check `node --version` |
-| `DIRECT_URL` vs `DATABASE_URL` | Use **pooled** URL for `DATABASE_URL` (runtime), **direct** for `DIRECT_URL` (migrations) |
+You are now ready to start deploying and benchmarking ZK contracts! Proceed to the [USAGE.md](./USAGE.md) for a guide on how to navigate the platform.

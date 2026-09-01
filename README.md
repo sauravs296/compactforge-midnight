@@ -1,153 +1,212 @@
-# 🛠️ CompactForge
+<div align="center">
+  <img src="public/logo.png" width="120" alt="CompactForge Logo" />
+  <h1>🛠️ CompactForge</h1>
+  <p><strong>The Developer Infrastructure Suite & CI/CD Pipeline for Midnight Network Compact Contracts</strong></p>
 
-**The Missing Developer Infrastructure & CI/CD Suite for the Midnight Network**
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
+    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white" alt="Prisma" />
+    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/Midnight-Network-blueviolet?style=for-the-badge" alt="Midnight Network" />
+    <img src="https://img.shields.io/badge/1AM-Wallet-orange?style=for-the-badge" alt="1AM Wallet" />
+  </p>
 
-[![Frontend CI](https://github.com/<YOUR_GITHUB_USERNAME>/CompactForge/actions/workflows/frontend.yml/badge.svg)](https://github.com/<YOUR_GITHUB_USERNAME>/CompactForge/actions/workflows/frontend.yml)
-[![Contracts CI](https://github.com/<YOUR_GITHUB_USERNAME>/CompactForge/actions/workflows/contracts.yml/badge.svg)](https://github.com/<YOUR_GITHUB_USERNAME>/CompactForge/actions/workflows/contracts.yml)
-[![TypeCheck](https://github.com/<YOUR_GITHUB_USERNAME>/CompactForge/actions/workflows/typecheck.yml/badge.svg)](https://github.com/<YOUR_GITHUB_USERNAME>/CompactForge/actions/workflows/typecheck.yml)
-
----
-
-## 🔗 Live Links
-
-| Resource | URL |
-|---|---|
-| 🚀 **Live App (Preprod)** | *(Add your Vercel URL after deployment)* |
-| 🎥 **Demo Video** | *(Add your Loom / YouTube link after recording)* |
-| 🐦 **X / Twitter** | *(Add your X profile link)* |
-| 📦 **GitHub Repo** | https://github.com/<YOUR_GITHUB_USERNAME>/CompactForge |
-
----
-
-## 📋 Preprod Contract
-
-| Field | Value |
-|---|---|
-| **Contract Address** | *(Deploy via 1AM Wallet → paste here)* |
-| **Deployment TxHash** | *(From wallet popup after deploy → paste here)* |
-| **Explorer Link** | `https://explorer.preprod.midnight.network/contracts/<CONTRACT_ADDRESS>` |
-| **Network** | Midnight Preprod |
+  <p>
+    <img src="https://img.shields.io/github/actions/workflow/status/sauravs296/compactforge-midnight/contracts.yml?label=Compact%20Build" alt="Compact Build Status" />
+    <img src="https://img.shields.io/github/actions/workflow/status/sauravs296/compactforge-midnight/frontend.yml?label=Next.js%20Build" alt="Next.js Build Status" />
+  </p>
+</div>
 
 ---
 
-## 💡 The Problem
+> ⚠️ **Disclaimer:** This project and all smart contracts are deployed and tested exclusively on the **Midnight Network PREPROD** environment. All blockchain references, explorer links, and transactions belong to the Preprod network.
 
-Building on Midnight today means fighting friction that has nothing to do with the zero-knowledge logic developers actually want to write:
-
-- **No CI/CD**: There is no standard way to automatically compile and test Compact contracts on every GitHub push.
-- **No benchmarking**: Teams have no visibility into proof generation regressions across commits.
-- **No shared infrastructure**: Every team spins up their own local Docker proof-server stack from scratch.
-- **No dashboard**: There is nowhere to see deployment history, proof times, and CI runs in one place.
-
-These are not edge cases — the Midnight ecosystem hackathon explicitly named these gaps as unmet needs.
-
----
-
-## 🚀 The Solution
-
-CompactForge is the developer infrastructure layer for Midnight — purpose-built for Compact's dual-state (public ledger + private witness) model.
-
-### Features
-- 🔄 **Automated CI/CD** — GitHub Actions pipeline compiles, tests, and benchmarks every Compact contract on every push. Proving-time regressions are caught before they reach Preprod.
-- 📊 **Visibility Dashboard** — A Next.js dashboard shows deployment history, per-circuit proving times, and CI run logs in one unified interface.
-- 🔒 **Privacy-Correct Smart Contract** — The bundled `token_ledger.compact` demonstrates all core Midnight patterns: `export ledger`, `witness`, `disclose()`, `assert()`, `Map` state, admin access control, and an emergency circuit breaker.
-- ☁️ **Preprod-Native** — All endpoints, wallet connections, and contract deployments target the Midnight Preprod network.
+### 🔗 Important Links
+* **Live Preprod Demo:** [https://compactforge-midnight.vercel.app/](https://compactforge-midnight.vercel.app/) *(Live CompactForge Application on Preprod)*
+* **Documentation:** [https://compactforge-midnight.vercel.app/docs](https://compactforge-midnight.vercel.app/docs)
+* **Demo Video:** [Watch the CompactForge Demo on YouTube](https://youtu.be/uWtSPvXCc7Y)
+* **Setup Guide:** [SETUP.md](./SETUP.md)
+* **Usage Guide:** [USAGE.md](./USAGE.md)
+* **Proposal:** [PROPOSAL.md](./PROPOSAL.md)
 
 ---
 
-## 🏗️ Architecture
+## 💡 The Problem & Our Solution
 
-- **Frontend**: Next.js 16 (App Router), Tailwind CSS v4, Shadcn/UI
-- **Smart Contracts**: Compact (Midnight Network) — 6 ZK circuits
-- **Database**: Neon Serverless Postgres, Prisma ORM v7
-- **Wallet**: 1AM Wallet Extension (Preprod)
-- **CI/CD**: GitHub Actions (3 workflows: `contracts.yml`, `frontend.yml`, `typecheck.yml`)
-- **Hosting**: Vercel
+**The Problem**
+Building privacy-preserving smart contracts in Zero-Knowledge (ZK) is incredibly complex. For developers building on the **Midnight Network** using the **Compact** language, the friction doesn't stop at learning the language. Developers lack the fundamental Web2-style infrastructure they are used to:
+- No automated CI/CD pipelines to compile and verify `.compact` files on every commit.
+- No easy way to track **Proving Times** (benchmarks) across different commits to see if a code change made generating ZK proofs slower or faster.
+- No unified dashboard to instantly deploy contracts and interact with them in the browser using the 1AM wallet.
+
+**The Solution: CompactForge**
+CompactForge bridges the gap by giving every Midnight team a unified CI/CD and DevOps dashboard.
+1. **Automated CI/CD:** Our GitHub Actions automatically compile Compact circuits.
+2. **Proof Benchmarking:** CI runs time how long it takes to generate ZK proofs for each circuit and saves this directly to our Neon Postgres database.
+3. **One-Click Deploy & Interact:** Connect your 1AM wallet to seamlessly deploy contracts and call any circuit directly from the web dashboard.
+
+---
+
+## 🔐 Public State vs. Private Witness
+
+Midnight brings privacy to smart contracts. To demonstrate this, CompactForge includes a fully featured `token_ledger` contract featuring 6 unique ZK circuits (`mint`, `transfer`, `deposit`, `burn`, `pause`, `unpause`).
+
+* **Public State (On-Chain):** Data that is globally visible and verifiable by anyone. In our contract, `balances`, `totalSupply`, `ownerCount`, `admin`, and `paused` are public state variables. 
+* **Private Witness (Off-Chain):** Secret data that never touches the blockchain. In our contract, the user's `localSecretKey()` is a private witness. The ZK circuit proves that the caller holds the correct secret key to authorize a transfer or mint, without ever revealing the key itself on the public ledger.
+
+---
+
+## 📸 Product Walkthrough
+
+<div align="center">
+  <img src="assets/project/landing-page.png" alt="Landing Page" width="800" />
+  <p><em>The CompactForge landing page showcasing features and architecture.</em></p>
+  <br/>
+
+  <img src="assets/project/dashboard.png" alt="Dashboard" width="800" />
+  <p><em>The developer dashboard aggregating deployments, runs, and CI metrics.</em></p>
+  <br/>
+
+  <img src="assets/project/ci-runs.png" alt="CI Runs" width="800" />
+  <p><em>Live GitHub Actions CI/CD history synced directly to the dashboard.</em></p>
+  <br/>
+
+  <img src="assets/project/proof-benchmark.png" alt="Proof Benchmarking" width="800" />
+  <p><em>ZK Proof Generation benchmarking tracked across commits for performance optimization.</em></p>
+  <br/>
+
+  <img src="assets/project/deployment.png" alt="Deploy" width="800" />
+  <p><em>One-click smart contract deployment interface powered by the 1AM wallet.</em></p>
+  <br/>
+
+  <img src="assets/project/interact.png" alt="Interact" width="800" />
+  <p><em>Interactive terminal to generate ZK proofs and execute circuit methods on the Preprod network.</em></p>
+  <br/>
+
+  <img src="assets/project/docs-section.png" alt="Docs" width="800" />
+  <p><em>Comprehensive API reference and developer documentation built into the app.</em></p>
+</div>
+
+---
+
+## 📜 The Smart Contract
+
+The core of our testing and demonstration is the `token_ledger.compact` contract.
+
+**Preprod Network Deployments:**
+- **Smart Contract Address:** [f1bf4b0...](https://explorer.1am.xyz/contract/f1bf4b0609f5078e44e3704ef917a5edf0edbecfd4fbb3e05ba7181f0dcbe585?network=preprod)
+- **Deployment TxHash:** [505092cd...](https://explorer.1am.xyz/tx/505092cdae10713eeb5a4f47af05da3414b92afa7a81a8c1b7153d47e68e090f?network=preprod)
+- **Sample Deposit Transaction:** [a7eccdd4...](https://explorer.1am.xyz/tx/a7eccdd4b6027d1a222ef43a40de1dce6cbf56ecadaa0d93093b7b9ffdc02406?network=preprod)
+
+<div align="center">
+  <img src="assets/smart-contracts/keys.png" alt="ZK Keys" width="800" />
+  <p><em>The compiled ZK Proving and Verifying keys tracked securely.</em></p>
+  <br/>
+
+  <img src="assets/smart-contracts/smartcontracts-deployed.png" alt="Contract Code 1" width="800" />
+  <p><em>Verified smart contract deployments on the Midnight Preprod Network.</em></p>
+  <br/>
+
+  <img src="assets/smart-contracts/deposit.png" alt="Contract Code 2" width="800" />
+  <p><em>Executing the deposit circuit to shield funds via Zero-Knowledge proofs.</em></p>
+</div>
+
+---
+
+## 🏗️ Architecture Diagrams
+
+### Project Architecture (CI/CD Flow)
+```mermaid
+graph TD
+    A[Developer] -->|git push| B(GitHub Repository)
+    B -->|Trigger| C{GitHub Actions}
+    C -->|Compile .compact| D[Generate ZK Keys & IR]
+    C -->|Run Tests| E[Vitest]
+    C -->|Webhook| F[(Neon Postgres DB)]
+    F -->|Store| G[Benchmark Times & CI Run Logs]
+    G --> H[CompactForge Dashboard]
+```
+
+### User Workflow (Deploy & Interact)
+```mermaid
+sequenceDiagram
+    participant User
+    participant App as CompactForge Web
+    participant Wallet as 1AM Wallet Extension
+    participant Network as Midnight Preprod
+
+    User->>App: Click "Deploy Contract"
+    App->>Wallet: Request permissions & Shielded Keys
+    App->>App: createUnprovenDeployTx()
+    App->>Wallet: Prove ZK Circuit (Downloads Keys via API)
+    Wallet-->>App: Proven Transaction
+    App->>Network: submitTransaction()
+    Network-->>App: Contract Address
+    App-->>User: Deployment Success
+
+    User->>App: Select Circuit (e.g., Deposit)
+    App->>Wallet: Request ZK Proof Generation
+    Wallet-->>App: Proven Circuit Call
+    App->>Network: Broadcast Transaction
+```
 
 ---
 
 ## 📁 File Structure
 
-```
+```text
 CompactForge/
-├── contracts/
-│   └── token_ledger/
-│       ├── token_ledger.compact          # Privacy-preserving token ledger (6 ZK circuits)
-│       └── build/token_ledger/
-│           ├── contract/                 # Compiler-generated TypeScript bindings
-│           ├── keys/                     # Prover + verifier keys (.prover / .verifier)
-│           └── zkir/                     # ZK intermediate representation (.zkir / .bzkir)
 ├── src/
 │   ├── app/
-│   │   ├── (marketing)/page.tsx          # Landing page
-│   │   └── dashboard/                    # Dashboard pages (overview, contracts, deployments, benchmarks, ci-runs)
-│   └── lib/
-│       └── midnight/
-│           ├── wallet.ts                 # 1AM Wallet connector (real DApp Connector API)
-│           ├── wallet.test.ts            # Vitest tests for wallet utilities
-│           └── network.ts               # Preprod endpoint config
-├── .github/workflows/
-│   ├── contracts.yml                     # Compact compile + benchmark + API post
-│   ├── frontend.yml                      # TypeCheck → Lint → Test → Build
-│   └── typecheck.yml                     # Strict TypeScript check
-├── prisma/schema.prisma                  # DB models: Contract, Circuit, Benchmark, CIRun, Deployment
-├── SETUP.md                              # Local dev setup guide
-└── USAGE.md                              # App usage guide
+│   │   ├── api/            # Next.js API Routes (CI Webhooks, DB access)
+│   │   │   └── contracts/  # Serves .bzkir, .prover, .verifier binaries locally
+│   │   ├── dashboard/      # Web dashboard pages (Next.js App Router)
+│   │   └── docs/           # Documentation generated natively
+│   ├── components/         # React Components (DeployButton, InteractPanel, etc)
+│   └── __tests__/          # Vitest Unit test suite
+├── contracts/
+│   └── token_ledger/       
+│       ├── token_ledger.compact    # The Midnight Compact source code
+│       └── build/                  # Generated WASM, Keys, and ZK IR
+├── prisma/
+│   └── schema.prisma       # Database Schema (Neon Postgres)
+└── .github/workflows/      # GitHub Actions CI/CD pipelines
 ```
 
 ---
 
-## 🔒 Privacy Model (token_ledger.compact)
+## 🧪 Test Cases
 
-The `token_ledger.compact` contract separates **public on-chain state** from **private witness data**:
+The project utilizes `vitest` for robust unit testing covering utility functions, API endpoint validation, Contract metadata, and our custom ZK config provider URLs.
 
-| Layer | Compact keyword | Visibility |
-|---|---|---|
-| Token balances (`Map<Bytes<32>, Uint<64>>`) | `export ledger` | **Public** — on-chain, readable by all |
-| Total supply, owner count, admin, paused flag | `export ledger` | **Public** |
-| Caller's secret key | `witness` | **Private** — never leaves the prover |
-| ZK circuits (mint, deposit, transfer, burn, pause, unpause) | `export circuit` | Logic compiled to ZK proofs |
-
-Every ledger mutation uses `disclose()` to explicitly declare public disclosure — the Compact compiler enforces this at compile time and rejects any circuit that leaks witness data without `disclose()`.
-
-**Circuits:**
-- `mint(recipient, amount)` — admin-only token creation
-- `deposit(amount)` — self-funded top-up
-- `transfer(recipient, amount)` — ZK-private ownership transfer
-- `burn(amount)` — token destruction
-- `pause()` / `unpause()` — emergency circuit breaker (admin-only)
-
----
-
-## ⚡ Quick Start
-
+To run the tests:
 ```bash
-git clone https://github.com/<YOUR_GITHUB_USERNAME>/CompactForge.git
-cd CompactForge
-npm install
-cp .env.local.example .env   # fill in Neon DB credentials
-npx prisma generate
-npx prisma db push
-npm run dev
+npm run test
 ```
 
-See [SETUP.md](./SETUP.md) for full prerequisites and [USAGE.md](./USAGE.md) for day-to-day usage.
+<div align="center">
+  <img src="assets/test/npm-run-test.png" alt="Test Results" width="800" />
+  <p><em>Vitest running the comprehensive 67-test suite to validate our APIs and SDK configuration.</em></p>
+</div>
 
 ---
 
-## 🧪 Tests & CI
+## 🚀 Future Implementations & Real World Applications
 
-```bash
-npm test          # Vitest suite
-npm run build     # Production build check
-```
+**Future Roadmap:**
+1. **Multi-Contract Support:** Dynamically upload, compile, and manage any `.compact` file directly in the browser using WASM.
+2. **Advanced Analytics:** Track gas fees, proving size optimization recommendations, and failure rate tracking for ZK circuits over time.
+3. **Automated Auditing:** CI/CD step that statically analyzes Compact contracts for common privacy leaks.
 
-All three GitHub Actions workflows run on every push to `main`:
-
-1. **`typecheck.yml`** — `tsc --strict --noEmit`
-2. **`frontend.yml`** — TypeCheck → Lint → `npm test` → `next build`
-3. **`contracts.yml`** — `compact compile` → benchmark → upload artifact → POST to dashboard API
+**Real World Application:**
+CompactForge sets the standard for how development teams building on Midnight will handle their release cycles. By standardizing CI/CD for ZK proofs, teams can build decentralized confidential ledgers, voting systems, and privacy-preserving identity systems with the confidence that every commit is mathematically verified and performance benchmarked before reaching production.
 
 ---
 
-*Built for the Midnight Network Hackathon — CompactForge aims to be the Infura + GitHub Actions of the Midnight ecosystem.*
+### 🙏 Salutation
+**A huge thanks to the Midnight Team for organizing this hackathon!** Building with Compact and exploring the frontier of Zero-Knowledge smart contracts has been an incredible experience.
+
+<div align="center">
+  <b>Built with ❤️ for the Midnight Ecosystem</b>
+</div>
