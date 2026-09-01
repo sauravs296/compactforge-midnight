@@ -1,10 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { LineChart } from "lucide-react";
+import Link from "next/link";
+import { ExternalLink, LineChart } from "lucide-react";
 import prisma from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic';
+
+const GITHUB_REPO = "https://github.com/sauravs296/compactforge-midnight";
 
 export default async function BenchmarksPage() {
   const circuits = await prisma.circuit.findMany({
@@ -20,10 +23,9 @@ export default async function BenchmarksPage() {
     const latest = c.benchmarks[0];
     return {
       circuit: c.name,
-      k: 9, // Since we don't store k in DB currently
-      rows: 100, // Since we don't store rows in DB currently
       provingMs: latest?.provingTimeMs || 0,
-      commit: latest?.commitSha || 'unknown',
+      commit: latest?.commitSha ? latest.commitSha.substring(0, 7) : 'unknown',
+      commitUrl: latest?.commitSha ? `${GITHUB_REPO}/commit/${latest.commitSha}` : '#',
       date: latest?.createdAt ? new Date(latest.createdAt).toLocaleDateString() : 'N/A'
     };
   }).filter(b => b.provingMs > 0);
@@ -110,7 +112,7 @@ export default async function BenchmarksPage() {
         <CardHeader>
           <CardTitle>Circuit Parameters</CardTitle>
           <CardDescription>
-            ZK circuit parameters produced by the Compact compiler (k = SRS size, rows = constraint rows).
+            ZK circuit performance metrics tracked by the CompactForge CI pipeline.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -118,19 +120,16 @@ export default async function BenchmarksPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Circuit</TableHead>
-                <TableHead>k</TableHead>
-                <TableHead>Rows</TableHead>
                 <TableHead>Proving Time</TableHead>
                 <TableHead>Commit</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {BENCHMARKS.map((b) => (
                 <TableRow key={b.circuit}>
                   <TableCell className="font-mono">{b.circuit}</TableCell>
-                  <TableCell>{b.k}</TableCell>
-                  <TableCell>{b.rows}</TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"
@@ -147,6 +146,18 @@ export default async function BenchmarksPage() {
                   </TableCell>
                   <TableCell className="font-mono text-xs">{b.commit}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{b.date}</TableCell>
+                  <TableCell className="text-right">
+                    <Link
+                      href={b.commitUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs hover:underline"
+                      style={{ color: "oklch(0.72 0.18 272)" }}
+                    >
+                      Verify
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

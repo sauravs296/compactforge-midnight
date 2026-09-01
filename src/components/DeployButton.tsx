@@ -48,7 +48,7 @@ const PHASE_LABEL: Record<Exclude<Phase, "done" | "error">, string> = {
   recording:          "Recording deployment in DB…",
 };
 
-const EXPLORER = "https://midnight-explorer.io/preprod/transaction/";
+const EXPLORER = "https://preprod.midnightexplorer.com/tx/";
 
 // ── In-memory PrivateStateProvider ───────────────────────────────────────────
 

@@ -9,7 +9,7 @@ import { DeployButton } from "@/components/DeployButton";
 
 export const dynamic = 'force-dynamic';
 
-const EXPLORER_TX = "https://midnight-explorer.io/preprod/transaction/";
+const EXPLORER_TX = "https://preprod.midnightexplorer.com/tx/";
 
 const STATUS_STYLES: Record<string, string> = {
   confirmed: "bg-green-500/10 text-green-500 border-green-500/20",

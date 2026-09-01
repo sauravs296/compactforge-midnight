@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const EXPLORER = "https://midnight-explorer.io/preprod/transaction/";
+const EXPLORER = "https://preprod.midnightexplorer.com/tx/";
 
 // Dummy private state provider (in-memory)
 function makeInMemoryPrivateStateProvider() {
