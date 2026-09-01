@@ -26,9 +26,18 @@
 * **Live Preprod Demo:** [https://compactforge-midnight.vercel.app/](https://compactforge-midnight.vercel.app/) *(Live CompactForge Application on Preprod)*
 * **Documentation:** [https://compactforge-midnight.vercel.app/docs](https://compactforge-midnight.vercel.app/docs)
 * **Demo Video:** [Watch the CompactForge Demo on YouTube](https://youtu.be/uWtSPvXCc7Y)
+
+---
+
+<br>
+
+## Project Documentation Files
+
 * **Setup Guide:** [SETUP.md](./SETUP.md)
 * **Usage Guide:** [USAGE.md](./USAGE.md)
 * **Proposal:** [PROPOSAL.md](./PROPOSAL.md)
+
+<br>
 
 ---
 
@@ -95,9 +104,23 @@ Midnight brings privacy to smart contracts. To demonstrate this, CompactForge in
 The core of our testing and demonstration is the `token_ledger.compact` contract.
 
 **Preprod Network Deployments:**
-- **Smart Contract Address:** [f1bf4b0...](https://explorer.1am.xyz/contract/f1bf4b0609f5078e44e3704ef917a5edf0edbecfd4fbb3e05ba7181f0dcbe585?network=preprod)
-- **Deployment TxHash:** [505092cd...](https://explorer.1am.xyz/tx/505092cdae10713eeb5a4f47af05da3414b92afa7a81a8c1b7153d47e68e090f?network=preprod)
-- **Sample Deposit Transaction:** [a7eccdd4...](https://explorer.1am.xyz/tx/a7eccdd4b6027d1a222ef43a40de1dce6cbf56ecadaa0d93093b7b9ffdc02406?network=preprod)
+
+| Contract Name | Full Contract Address | Verify Link (Preprod) |
+|---|---|---|
+| `token_ledger.compact` | `f1bf4b0609f5078e44e3704ef917a5edf0edbecfd4fbb3e05ba7181f0dcbe585` | [View on 1AM Explorer](https://explorer.1am.xyz/contract/f1bf4b0609f5078e44e3704ef917a5edf0edbecfd4fbb3e05ba7181f0dcbe585?network=preprod) |
+
+**Sample Transactions (Preprod):**
+
+| Transaction Type | Full TxHash | Verify Link (Preprod) |
+|---|---|---|
+| Contract Deployment | `505092cdae10713eeb5a4f47af05da3414b92afa7a81a8c1b7153d47e68e090f` | [View on 1AM Explorer](https://explorer.1am.xyz/tx/505092cdae10713eeb5a4f47af05da3414b92afa7a81a8c1b7153d47e68e090f?network=preprod) |
+| Sample ZK Deposit | `a7eccdd4b6027d1a222ef43a40de1dce6cbf56ecadaa0d93093b7b9ffdc02406` | [View on 1AM Explorer](https://explorer.1am.xyz/tx/a7eccdd4b6027d1a222ef43a40de1dce6cbf56ecadaa0d93093b7b9ffdc02406?network=preprod) |
+
+<br>
+
+### Screenshots of the Smart Contract in Action
+
+<br>
 
 <div align="center">
   <img src="assets/smart-contracts/keys.png" alt="ZK Keys" width="800" />

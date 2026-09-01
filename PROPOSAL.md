@@ -36,6 +36,7 @@ CompactForge provides a "Vercel-like" DevOps experience specifically tailored fo
 - **Testing:** Vitest
 
 ---
+<br>
 
 ### 🚀 Impact
 CompactForge sets the standard for how development teams building on Midnight will handle their release cycles. By standardizing CI/CD for ZK proofs, teams can build decentralized confidential ledgers, voting systems, and privacy-preserving identity systems with the confidence that every commit is mathematically verified and performance benchmarked before reaching production.
