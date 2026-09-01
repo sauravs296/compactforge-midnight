@@ -227,15 +227,13 @@ export function InteractPanel({ defaultAddress }: { defaultAddress: string }) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         localSecretKey: (ctx: any) => [ctx.privateState, signingKeyBytes],
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const compiledContract = CompiledContract.make(
         "token_ledger",
         contractModule.Contract
-      ).pipe(withRealWitnesses) as any;
+      ).pipe(withRealWitnesses) as unknown;
 
       // Parse args based on circuit
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let args: any[] = [];
+      let args: unknown[] = [];
       if (circuitId === "mint" || circuitId === "transfer") {
         args = [parseAddressToBytes32(recipient), BigInt(amount || "0")];
       } else if (circuitId === "deposit" || circuitId === "burn") {

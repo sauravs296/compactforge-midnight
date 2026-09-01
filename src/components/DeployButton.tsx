@@ -165,18 +165,14 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
         { createUnprovenDeployTx, submitTxAsync },
         { setNetworkId },
         { CompiledContract },
-        { sampleSigningKey },
         contractModule,
-        { FetchZkConfigProvider }
       ] = await Promise.all([
         import("@midnight-ntwrk/midnight-js-contracts"),
         import("@midnight-ntwrk/midnight-js-network-id"),
         import("@midnight-ntwrk/compact-js"),
-        import("@midnight-ntwrk/compact-runtime"),
         // Import the compiled contract relative to this file so webpack bundles it
         // and correctly resolves its internal bare imports (like compact-runtime).
-        import("../../contracts/token_ledger/build/token_ledger/contract/index.js"),
-        import("@midnight-ntwrk/midnight-js-fetch-zk-config-provider")
+        import("../../contracts/token_ledger/build/token_ledger/contract/index.js")
       ]);
 
       // Configure global network ID before initializing providers

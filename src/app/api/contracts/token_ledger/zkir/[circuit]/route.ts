@@ -6,7 +6,7 @@ import * as path from "path";
  * GET /api/contracts/token_ledger/zkir/[circuit]
  * Serves binary ZKIR (Zero-Knowledge Intermediate Representation) files.
  */
-export async function GET(req: NextRequest, { params }: { params: any }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ circuit: string }> }) {
   const { circuit } = await params;
   
   const validCircuits = ["mint", "transfer", "deposit", "burn", "pause", "unpause"];

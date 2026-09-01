@@ -6,7 +6,7 @@ import * as path from "path";
  * GET /api/contracts/token_ledger/keys/[filename]
  * Serves binary ZK prover/verifier keys from the committed artifacts directory.
  */
-export async function GET(req: NextRequest, { params }: { params: any }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ filename: string }> }) {
   const { filename } = await params; // e.g. "deposit.prover"
 
   // Try different extensions if it doesn't match directly
