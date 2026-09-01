@@ -77,9 +77,9 @@ export async function POST(req: NextRequest) {
 
     // Optionally record the wallet that performed the deployment
     if (walletAddress) {
-      let org = await prisma.organization.findFirst();
+      const org = await prisma.organization.findFirst();
       if (org) {
-        let user = await prisma.user.findFirst({ where: { organizationId: org.id } });
+        const user = await prisma.user.findFirst({ where: { organizationId: org.id } });
         if (user) {
           await prisma.wallet.upsert({
             where: { address: walletAddress },
