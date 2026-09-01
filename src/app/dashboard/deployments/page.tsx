@@ -125,12 +125,16 @@ export default async function DeploymentsPage() {
                         <Badge variant="outline">{d.network}</Badge>
                       </TableCell>
                       <TableCell className="font-mono text-xs max-w-[160px]">
-                        <span
-                          className="block truncate"
+                        <Link
+                          href={`${EXPLORER_TX}${d.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block truncate hover:underline"
+                          style={{ color: "oklch(0.72 0.18 272)" }}
                           title={d.txHash}
                         >
                           {d.txHash}
-                        </span>
+                        </Link>
                       </TableCell>
                       <TableCell>
                         <Badge className={STATUS_STYLES[d.status] ?? "border text-muted-foreground"}>

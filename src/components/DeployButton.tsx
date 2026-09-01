@@ -22,6 +22,7 @@ import {
   Rocket, Loader2, CheckCircle2, XCircle, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -129,6 +130,7 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
     try {
       // ── 1. Connect 1AM Wallet ──────────────────────────────────────────
       setState({ phase: "connecting" });
+      toast.loading("Connecting to 1AM wallet…", { id: "deploy" });
 
       const midnight = (window as unknown as { midnight?: Record<string, unknown> }).midnight;
       if (!midnight || Object.keys(midnight).length === 0) {
@@ -176,6 +178,8 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
         connected.getShieldedAddresses(),
         connected.getConfiguration(),
       ]);
+
+      toast.loading("Wallet connected. Initialising Midnight SDK…", { id: "deploy" });
 
       // ── 2. Build Midnight SDK Providers ───────────────────────────────
       setState({ phase: "building_providers" });
@@ -271,6 +275,7 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
       // ── 3. Deploy the contract ─────────────────────────────────────────
       // This is the call that triggers the wallet popup for approval!
       setState({ phase: "deploying" });
+      toast.loading("Deploying — approve the transaction in your 1AM wallet…", { id: "deploy" });
 
       // sampleSigningKey() returns a hex string — convert to the Uint8Array<32>
       // that the localSecretKey witness AND the constructor adminAddress both need.
@@ -311,6 +316,7 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
 
       // ── 4. Record in Neon DB ───────────────────────────────────────────
       setState({ phase: "recording" });
+      toast.loading("Transaction submitted! Recording in database…", { id: "deploy" });
 
       const res = await fetch("/api/deployments", {
         method: "POST",
@@ -333,10 +339,26 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
         });
       }
 
+      // ── 5. Success toast ───────────────────────────────────────────────
+      toast.success("Contract deployed successfully on Midnight Preprod! 🎉", {
+        id: "deploy",
+        duration: 8000,
+        description: `Address: ${contractAddress.slice(0, 20)}…`,
+        action: {
+          label: "View on Explorer",
+          onClick: () => window.open(`${EXPLORER}${txId}`, "_blank"),
+        },
+      });
+
       setState({ phase: "done", contractAddress, txId });
       onDeployed?.(contractAddress);
     } catch (err: unknown) {
       const raw = err instanceof Error ? err.message : String(err);
+      toast.error("Deployment failed", {
+        id: "deploy",
+        duration: 10000,
+        description: raw.length > 120 ? raw.slice(0, 120) + "…" : raw,
+      });
       setState({ phase: "error", message: raw });
     }
   }, [onDeployed]);
