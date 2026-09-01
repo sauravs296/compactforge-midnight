@@ -112,8 +112,6 @@ export default async function CIRunsPage() {
               <TableRow>
                 <TableHead>Commit</TableHead>
                 <TableHead>Branch</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead>Circuits Compiled</TableHead>
                 <TableHead>Duration</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Date</TableHead>
@@ -142,8 +140,6 @@ export default async function CIRunsPage() {
                         {run.branch}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm max-w-[220px] truncate">{run.message}</TableCell>
-                    <TableCell>{run.circuits}</TableCell>
                     <TableCell>{run.duration}s</TableCell>
                     <TableCell>
                       <Badge className={`flex items-center gap-1 w-fit ${s.cls}`}>

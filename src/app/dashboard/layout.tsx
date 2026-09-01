@@ -25,6 +25,7 @@ const NAV = [
   { href: "/dashboard/deployments", icon: Rocket,          label: "Deployments"      },
   { href: "/dashboard/benchmarks",  icon: LineChart,       label: "Proof Benchmarks" },
   { href: "/dashboard/ci-runs",     icon: Activity,        label: "CI Runs"          },
+  { href: "/dashboard/interact",    icon: Zap,             label: "Interact"         },
 ];
 
 function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {

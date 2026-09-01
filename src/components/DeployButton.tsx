@@ -277,12 +277,15 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
       setState({ phase: "deploying" });
       toast.loading("Deploying — approve the transaction in your 1AM wallet…", { id: "deploy" });
 
-      // sampleSigningKey() returns a hex string — convert to the Uint8Array<32>
-      // that the localSecretKey witness AND the constructor adminAddress both need.
-      const signingKeyHex = sampleSigningKey();
-      const signingKeyBytes = Uint8Array.from(
-        Buffer.from(signingKeyHex.replace(/^0x/, ""), "hex")
+      // sampleSigningKey() returns a random key, which means you lose admin access!
+      // Instead, we derive a deterministic Bytes<32> signing key from the wallet's unshielded address
+      // so the user can reliably prove they are the admin in later transactions (like minting).
+      const hashBuffer = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(unshieldedAddress)
       );
+      const signingKeyBytes = new Uint8Array(hashBuffer);
+      const signingKeyHex = Buffer.from(signingKeyBytes).toString("hex");
 
       // withVacantWitnesses sets witnesses:{} which means new Contract({}) — no localSecretKey!
       // We MUST use withWitnesses and supply a real localSecretKey function that

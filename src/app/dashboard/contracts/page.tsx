@@ -35,8 +35,6 @@ export default async function ContractsPage() {
     const latest = circ.benchmarks[0];
     return {
       circuit: circ.name,
-      k: 9,
-      rows: 100,
       provingMs: latest?.provingTimeMs || 0
     };
   })).filter(c => c.provingMs > 0);
@@ -145,8 +143,6 @@ export default async function ContractsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Circuit</TableHead>
-                <TableHead>k (SRS size)</TableHead>
-                <TableHead>Rows</TableHead>
                 <TableHead>Avg Proving Time</TableHead>
               </TableRow>
             </TableHeader>
@@ -154,8 +150,6 @@ export default async function ContractsPage() {
               {CIRCUITS.map((c) => (
                 <TableRow key={c.circuit}>
                   <TableCell className="font-mono">{c.circuit}</TableCell>
-                  <TableCell>{c.k}</TableCell>
-                  <TableCell>{c.rows}</TableCell>
                   <TableCell>{c.provingMs} ms</TableCell>
                 </TableRow>
               ))}

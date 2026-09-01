@@ -32,8 +32,6 @@ export default async function DashboardOverview() {
     return {
       circuit: c.name,
       provingMs: ms,
-      k: 9, // Dummy default if not tracked in DB schema
-      rows: 100, // Dummy default
       commit: latest?.commitSha || 'unknown'
     };
   });
@@ -118,7 +116,7 @@ export default async function DashboardOverview() {
               <div key={c.circuit} className="space-y-1">
                 <div className="flex justify-between text-sm">
                   <span className="font-mono">{c.circuit}</span>
-                  <span className="text-muted-foreground text-xs">{c.provingMs} ms · k={c.k} · {c.rows} rows</span>
+                  <span className="text-muted-foreground text-xs">{c.provingMs} ms</span>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                   <div
