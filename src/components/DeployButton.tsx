@@ -96,30 +96,7 @@ function makeInMemoryPrivateStateProvider() {
 
 // ── ZK Config Provider (loads keys from /api/contracts/token_ledger/…) ───────
 
-function makeZKConfigProvider() {
-  const CIRCUITS = ["mint", "transfer", "deposit", "burn", "pause", "unpause"] as const;
 
-  async function fetchBinary(url: string): Promise<Uint8Array> {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-    return new Uint8Array(await res.arrayBuffer());
-  }
-
-  return {
-    getCircuitIds(): string[] {
-      return [...CIRCUITS];
-    },
-    async getProverKey(circuitId: string): Promise<Uint8Array> {
-      return fetchBinary(`/api/contracts/token_ledger/keys?circuit=${circuitId}&type=prover`);
-    },
-    async getVerifierKey(circuitId: string): Promise<Uint8Array> {
-      return fetchBinary(`/api/contracts/token_ledger/keys?circuit=${circuitId}&type=verifier`);
-    },
-    async getZkir(circuitId: string): Promise<Uint8Array> {
-      return fetchBinary(`/api/contracts/token_ledger/zkir?circuit=${circuitId}`);
-    },
-  };
-}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -190,6 +167,7 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
         { CompiledContract },
         { sampleSigningKey },
         contractModule,
+        { FetchZkConfigProvider }
       ] = await Promise.all([
         import("@midnight-ntwrk/midnight-js-contracts"),
         import("@midnight-ntwrk/midnight-js-network-id"),
@@ -198,12 +176,31 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
         // Import the compiled contract relative to this file so webpack bundles it
         // and correctly resolves its internal bare imports (like compact-runtime).
         import("../../contracts/token_ledger/build/token_ledger/contract/index.js"),
+        import("@midnight-ntwrk/midnight-js-fetch-zk-config-provider")
       ]);
 
       // Configure global network ID before initializing providers
       setNetworkId("preprod");
 
-      const zkConfigProvider = makeZKConfigProvider();
+      const baseURL = new URL("/api/contracts/token_ledger", window.location.origin).toString();
+      
+      const zkConfigProvider = {
+        getZKIR: async (circuitId: string) => {
+          const res = await fetch(`${baseURL}/zkir/${circuitId}`);
+          if (!res.ok) throw new Error(`Failed ZKIR: ${res.status}`);
+          return new Uint8Array(await res.arrayBuffer());
+        },
+        getProverKey: async (circuitId: string) => {
+          const res = await fetch(`${baseURL}/keys/${circuitId}.prover`);
+          if (!res.ok) throw new Error(`Failed ProverKey: ${res.status}`);
+          return new Uint8Array(await res.arrayBuffer());
+        },
+        getVerifierKey: async (circuitId: string) => {
+          const res = await fetch(`${baseURL}/keys/${circuitId}.verifier`);
+          if (!res.ok) throw new Error(`Failed VerifierKey: ${res.status}`);
+          return new Uint8Array(await res.arrayBuffer());
+        }
+      };
 
       // Get the wallet's proving provider (needed for ZK proof generation)
       const provingProvider = await connected.getProvingProvider(zkConfigProvider);

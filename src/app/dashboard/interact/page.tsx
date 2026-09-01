@@ -1,15 +1,6 @@
 import { InteractPanel } from "@/components/InteractPanel";
-import prisma from "@/lib/prisma";
 
-export const dynamic = 'force-dynamic';
-
-export default async function InteractPage() {
-  // Fetch the latest confirmed deployment to pre-fill the contract address
-  const latestDeployment = await prisma.deployment.findFirst({
-    where: { status: "confirmed" },
-    orderBy: { createdAt: "desc" }
-  });
-
+export default function InteractPage() {
   return (
     <div className="flex flex-col gap-8 max-w-4xl mx-auto">
       <div>
@@ -19,7 +10,7 @@ export default async function InteractPage() {
         </p>
       </div>
 
-      <InteractPanel defaultAddress={latestDeployment?.txHash || ""} />
+      <InteractPanel defaultAddress="" />
     </div>
   );
 }

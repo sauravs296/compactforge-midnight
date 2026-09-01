@@ -75,7 +75,7 @@ const STEPS = [
 ];
 
 /* ─── Hero product mockup (inline HTML component — no image needed) ────────── */
-function ProductMockup() {
+function ProductMockup({ recentRuns }: { recentRuns: { sha: string; status: string }[] }) {
   return (
     <div className="relative w-full max-w-[580px] mx-auto">
       {/* Glow behind the mockup */}
@@ -199,10 +199,12 @@ function ProductMockup() {
               </div>
               <div className="flex flex-col gap-1.5 mt-1">
                 {[
-                  { name: "transfer", pct: 96 },
                   { name: "mint",     pct: 100 },
+                  { name: "transfer", pct: 96 },
                   { name: "deposit",  pct: 74 },
                   { name: "burn",     pct: 79 },
+                  { name: "pause",    pct: 55 },
+                  { name: "unpause",  pct: 55 },
                 ].map(({ name, pct }) => (
                   <div key={name} className="flex items-center gap-2">
                     <span className="w-14 text-[8px] font-mono shrink-0" style={{ color: "oklch(0.58 0.01 265)" }}>{name}</span>
@@ -226,11 +228,7 @@ function ProductMockup() {
               style={{ background: "oklch(0.145 0.013 265)", border: "1px solid oklch(0.22 0.013 265 / 0.6)" }}
             >
               <span className="text-[9px] font-semibold mb-0.5" style={{ color: "oklch(0.82 0.008 265)" }}>Recent CI Runs</span>
-              {[
-                { sha: "a3f9c2d", status: "success" },
-                { sha: "9b1e4fa", status: "success" },
-                { sha: "c82d7e0", status: "failed" },
-              ].map(({ sha, status }) => (
+              {recentRuns.map(({ sha, status }) => (
                 <div key={sha} className="flex items-center gap-2">
                   <div
                     className="w-1.5 h-1.5 rounded-full shrink-0"
@@ -257,7 +255,28 @@ function ProductMockup() {
 }
 
 /* ─── Page ────────────────────────────────────────────────────────────────── */
-export default function MarketingPage() {
+export default async function MarketingPage() {
+  // Fetch real CI runs for the product mockup hero widget
+  let mockupRuns: { sha: string; status: string }[] = [
+    { sha: "a3f9c2d", status: "success" },
+    { sha: "9b1e4fa", status: "success" },
+    { sha: "c82d7e0", status: "success" },
+  ];
+  try {
+    const { PrismaClient } = await import("@prisma/client");
+    const p = new PrismaClient();
+    const runs = await p.cIRun.findMany({
+      take: 3,
+      orderBy: { createdAt: "desc" },
+      select: { commitSha: true, status: true },
+    });
+    await p.$disconnect();
+    if (runs.length > 0) {
+      mockupRuns = runs.map((r) => ({ sha: r.commitSha.substring(0, 7), status: r.status }));
+    }
+  } catch {
+    // Keep static fallback if DB is unavailable
+  }
   return (
     <div className="flex flex-col min-h-screen text-foreground bg-background">
 
@@ -291,6 +310,7 @@ export default function MarketingPage() {
               { href: "#features", label: "Features"   },
               { href: "#how",      label: "How it Works"},
               { href: "#contract", label: "Contract"   },
+              { href: "/docs",     label: "Docs"       },
             ].map(({ href, label }) => (
               <Link
                 key={href}
@@ -372,6 +392,33 @@ export default function MarketingPage() {
                   proof benchmarking, and real-time dashboard they need — without the friction.
                 </p>
 
+                {/* ⚠️ Local-run notice */}
+                <div
+                  className="animate-fade-up fade-delay-2 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm"
+                  style={{
+                    borderColor: "oklch(0.75 0.18 75 / 0.35)",
+                    background: "oklch(0.75 0.18 75 / 0.06)",
+                  }}
+                >
+                  <span className="text-base mt-0.5 shrink-0">⚠️</span>
+                  <div style={{ color: "oklch(0.75 0.15 75)" }}>
+                    <span className="font-semibold">Deploy &amp; Interact require local setup.</span>{" "}
+                    <span style={{ color: "oklch(0.62 0.10 75)" }}>
+                      ZK proving keys are served from your local disk and the 1AM Wallet proof station calls back to your server —
+                      these features cannot run on Vercel or any hosted deployment.
+                    </span>{" "}
+                    <a
+                      href="https://github.com/sauravs296/CompactForge#getting-started"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold underline underline-offset-2"
+                      style={{ color: "oklch(0.80 0.18 75)" }}
+                    >
+                      Clone &amp; run locally →
+                    </a>
+                  </div>
+                </div>
+
                 {/* CTA buttons */}
                 <div className="animate-fade-up fade-delay-3 flex flex-wrap gap-3">
                   <Link
@@ -412,7 +459,7 @@ export default function MarketingPage() {
 
               {/* Right: Product Mockup */}
               <div className="animate-fade-up fade-delay-2 hidden lg:block">
-                <ProductMockup />
+                <ProductMockup recentRuns={mockupRuns} />
               </div>
             </div>
           </div>

@@ -9,7 +9,7 @@ import { DeployButton } from "@/components/DeployButton";
 
 export const dynamic = 'force-dynamic';
 
-const EXPLORER_TX = "https://preprod.midnightexplorer.com/tx/";
+const EXPLORER_TX = "https://explorer.1am.xyz/tx/";
 
 const STATUS_STYLES: Record<string, string> = {
   confirmed: "bg-green-500/10 text-green-500 border-green-500/20",
@@ -126,7 +126,7 @@ export default async function DeploymentsPage() {
                       </TableCell>
                       <TableCell className="font-mono text-xs max-w-[160px]">
                         <Link
-                          href={`${EXPLORER_TX}${d.txHash}`}
+                          href={`${EXPLORER_TX}${d.txHash}?network=preprod`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block truncate hover:underline"
@@ -146,7 +146,7 @@ export default async function DeploymentsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <Link
-                          href={`${EXPLORER_TX}${d.txHash}`}
+                          href={`${EXPLORER_TX}${d.txHash}?network=preprod`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs hover:underline"

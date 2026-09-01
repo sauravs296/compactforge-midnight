@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const EXPLORER = "https://preprod.midnightexplorer.com/tx/";
+const EXPLORER = "https://explorer.1am.xyz/tx/";
 
 // Dummy private state provider (in-memory)
 function makeInMemoryPrivateStateProvider() {
@@ -21,23 +21,7 @@ function makeInMemoryPrivateStateProvider() {
   };
 }
 
-// ZK config provider (dummy)
-function makeZKConfigProvider() {
-  return {
-    getZKIR: async (contractName: string) => {
-      const res = await fetch(`/api/contracts/${contractName}/zkir`);
-      return new Uint8Array(await res.arrayBuffer());
-    },
-    getProvingKey: async (contractName: string, circuitName: string) => {
-      const res = await fetch(`/api/contracts/${contractName}/keys?circuit=${circuitName}&type=pk`);
-      return new Uint8Array(await res.arrayBuffer());
-    },
-    getVerificationKey: async (contractName: string, circuitName: string) => {
-      const res = await fetch(`/api/contracts/${contractName}/keys?circuit=${circuitName}&type=vk`);
-      return new Uint8Array(await res.arrayBuffer());
-    },
-  };
-}
+
 
 function serializeTx(tx: unknown): string {
   if (typeof tx === "string") return tx;
@@ -86,10 +70,7 @@ export function InteractPanel({ defaultAddress }: { defaultAddress: string }) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const walletInitial = Object.values(midnight)[0] as any;
       const connected = await walletInitial.connect("preprod");
-      await connected.hintUsage([
-        "getConfiguration", "getUnshieldedAddress", "getShieldedAddresses",
-        "getProvingProvider", "balanceTx", "balanceUnsealedTransaction", "submitTransaction"
-      ]);
+
 
       const [{ unshieldedAddress }, shieldedAddrs, config] = await Promise.all([
         connected.getUnshieldedAddress(),
@@ -104,18 +85,44 @@ export function InteractPanel({ defaultAddress }: { defaultAddress: string }) {
         { setNetworkId },
         { CompiledContract },
         contractModule,
-        { ContractState }
+        { ContractState },
+        { ZswapChainState, LedgerParameters }
       ] = await Promise.all([
         import("@midnight-ntwrk/midnight-js-contracts"),
         import("@midnight-ntwrk/midnight-js-network-id"),
         import("@midnight-ntwrk/compact-js"),
         // Import the compiled contract relative to this file
         import("../../contracts/token_ledger/build/token_ledger/contract/index.js"),
-        import("@midnight-ntwrk/compact-runtime")
+        import("@midnight-ntwrk/compact-runtime"),
+        import("@midnight-ntwrk/ledger-v8")
       ]);
 
       setNetworkId("preprod");
-      const zkConfigProvider = makeZKConfigProvider();
+      
+      const baseURL = new URL("/api/contracts/token_ledger", window.location.origin).toString();
+      
+      // We explicitly create a CUSTOM object (not an instance of FetchZkConfigProvider).
+      // This forces the 1AM wallet extension to evaluate the fetches locally in the browser
+      // and send the binary blobs to the Proof Station. If we use FetchZkConfigProvider, 
+      // the extension sends the baseURL to the cloud Proof Station, which cannot resolve localhost!
+      const zkConfigProvider = {
+        getZKIR: async (circuitId: string) => {
+          const res = await fetch(`${baseURL}/zkir/${circuitId}`);
+          if (!res.ok) throw new Error(`Failed ZKIR: ${res.status}`);
+          return new Uint8Array(await res.arrayBuffer());
+        },
+        getProverKey: async (circuitId: string) => {
+          const res = await fetch(`${baseURL}/keys/${circuitId}.prover`);
+          if (!res.ok) throw new Error(`Failed ProverKey: ${res.status}`);
+          return new Uint8Array(await res.arrayBuffer());
+        },
+        getVerifierKey: async (circuitId: string) => {
+          const res = await fetch(`${baseURL}/keys/${circuitId}.verifier`);
+          if (!res.ok) throw new Error(`Failed VerifierKey: ${res.status}`);
+          return new Uint8Array(await res.arrayBuffer());
+        }
+      };
+
       const provingProvider = await connected.getProvingProvider(zkConfigProvider);
 
       const proofProvider = {
@@ -153,12 +160,13 @@ export function InteractPanel({ defaultAddress }: { defaultAddress: string }) {
       // Implement public data provider purely via fetch to avoid isomorphic-ws turbopack crash
       const publicDataProvider = {
         async queryContractState(address: string) {
+          const formattedAddress = address.startsWith("0x") ? address : `0x${address}`;
           const res = await fetch(config.indexerUri, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
               query: `query LATEST_CONTRACT_STATE($address: HexEncoded!) { contractAction(address: $address) { state } }`,
-              variables: { address }
+              variables: { address: formattedAddress }
             })
           });
           if (!res.ok) throw new Error(`Indexer error ${res.status}`);
@@ -166,8 +174,35 @@ export function InteractPanel({ defaultAddress }: { defaultAddress: string }) {
           const action = payload.data?.contractAction;
           return action ? ContractState.deserialize(fromHex(action.state)) : null;
         },
-        async queryZSwapAndContractState() {
-          return null; // Only needed if using ZSwap
+        async queryZSwapAndContractState(address: string) {
+          const formattedAddress = address.startsWith("0x") ? address : `0x${address}`;
+          const res = await fetch(config.indexerUri, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              query: `
+                query LATEST_BOTH_STATE($address: HexEncoded!) {
+                  contractAction(address: $address) {
+                    state
+                    zswapState
+                    transaction { block { ledgerParameters } }
+                  }
+                }`,
+              variables: { address: formattedAddress }
+            })
+          });
+          if (!res.ok) throw new Error(`Indexer error ${res.status}`);
+          const payload = await res.json();
+          const action = payload.data?.contractAction;
+          if (!action?.zswapState) return null;
+          
+          return [
+            ZswapChainState.deserialize(fromHex(action.zswapState)),
+            ContractState.deserialize(fromHex(action.state)),
+            action.transaction?.block?.ledgerParameters
+              ? LedgerParameters.deserialize(fromHex(action.transaction.block.ledgerParameters))
+              : LedgerParameters.initialParameters(),
+          ];
         }
       };
 
@@ -229,7 +264,7 @@ export function InteractPanel({ defaultAddress }: { defaultAddress: string }) {
         description: `Tx Hash: ${txId.slice(0, 20)}…`,
         action: {
           label: "View Explorer",
-          onClick: () => window.open(`${EXPLORER}${txId}`, "_blank"),
+          onClick: () => window.open(`${EXPLORER}${txId}?network=preprod`, "_blank"),
         },
       });
 

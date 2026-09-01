@@ -3,20 +3,12 @@ import * as fs from "fs";
 import * as path from "path";
 
 /**
- * GET /api/contracts/token_ledger/zkir
+ * GET /api/contracts/token_ledger/zkir/[circuit]
  * Serves binary ZKIR (Zero-Knowledge Intermediate Representation) files.
- *
- * Query params:
- *   circuit — circuit name
  */
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const circuit = searchParams.get("circuit");
-
-  if (!circuit) {
-    return NextResponse.json({ error: "circuit query param required" }, { status: 400 });
-  }
-
+export async function GET(req: NextRequest, { params }: { params: any }) {
+  const { circuit } = await params;
+  
   const validCircuits = ["mint", "transfer", "deposit", "burn", "pause", "unpause"];
   if (!validCircuits.includes(circuit)) {
     return NextResponse.json({ error: "Unknown circuit" }, { status: 400 });
@@ -43,6 +35,17 @@ export async function GET(req: NextRequest) {
       "Content-Type": "application/octet-stream",
       "Content-Length": String(data.length),
       "Cache-Control": "public, max-age=86400, immutable",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
     },
   });
 }
