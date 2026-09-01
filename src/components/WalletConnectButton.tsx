@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { Loader2, Wallet } from "lucide-react";
 import { connectWallet, getUnshieldedAddress } from "@/lib/midnight/wallet";
 import { toast } from "sonner";

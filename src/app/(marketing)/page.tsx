@@ -561,7 +561,7 @@ export default function MarketingPage() {
                 style={{ background: "linear-gradient(90deg, transparent, oklch(0.62 0.23 272 / 0.35), oklch(0.62 0.27 305 / 0.35), transparent)" }}
               />
 
-              {STEPS.map(({ n, icon: StepIcon, title, body }) => (
+              {STEPS.map(({ n, title, body }) => (
                 <div
                   key={n}
                   className="rounded-2xl p-7 flex flex-col gap-4 glow-border transition-all relative"

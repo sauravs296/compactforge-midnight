@@ -171,7 +171,7 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
         "submitTransaction",
       ]);
 
-      const [{ unshieldedAddress }, shieldedAddrs, config] = await Promise.all([
+      const [{ unshieldedAddress }, shieldedAddrs] = await Promise.all([
         connected.getUnshieldedAddress(),
         connected.getShieldedAddresses(),
         connected.getConfiguration(),

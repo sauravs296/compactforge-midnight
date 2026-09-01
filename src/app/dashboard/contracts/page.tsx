@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Code2, ExternalLink } from "lucide-react";
+import { Code2 } from "lucide-react";
 
 import prisma from "@/lib/prisma";
 

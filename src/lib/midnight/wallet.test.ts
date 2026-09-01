@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { connectWallet, getUnshieldedAddress } from './wallet';
+import { connectWallet } from './wallet';
 
 describe('Wallet Utilities', () => {
   it('connectWallet throws when no wallet extension is present', async () => {
