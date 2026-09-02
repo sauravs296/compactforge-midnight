@@ -24,8 +24,9 @@
 
 ### 🔗 Important Links
 * **Live Preprod Demo:** [https://compactforge-midnight.vercel.app/](https://compactforge-midnight.vercel.app/) *(Live CompactForge Application on Preprod)*
-* **Documentation:** [https://compactforge-midnight.vercel.app/docs](https://compactforge-midnight.vercel.app/docs)
-* **Demo Video:** [Watch the CompactForge Demo on YouTube](https://youtu.be/uWtSPvXCc7Y)
+* **Documentation:** [https://compactforge-midnight.vercel.app/docs](https://compactforge-midnight.vercel.app/docs) *(Complete documentation for the CompactForge project)*
+* **Demo Video:** [Watch the CompactForge Demo on YouTube](https://youtu.be/uWtSPvXCc7Y) *(Watch the full demo)*
+* **X Profile Link:** [https://x.com/compactforgee](https://x.com/compactforgee) *(Follow us on X)*
 
 ---
 
@@ -33,9 +34,9 @@
 
 ## Project Documentation Files
 
-* **Setup Guide:** [SETUP.md](./SETUP.md)
-* **Usage Guide:** [USAGE.md](./USAGE.md)
-* **Proposal:** [PROPOSAL.md](./PROPOSAL.md)
+* **Setup Guide:** [SETUP.md](./SETUP.md) *(Step-by-step instructions for setting up the project)*
+* **Usage Guide:** [USAGE.md](./USAGE.md) *(Instructions for using the project)*
+* **Proposal:** [PROPOSAL.md](./PROPOSAL.md) *(The original proposal document)*
 
 <br>
 
