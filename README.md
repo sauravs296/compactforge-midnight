@@ -24,6 +24,7 @@
 
 ### 🔗 Important Links
 * **Live Preprod Demo:** [https://compactforge-midnight.vercel.app/](https://compactforge-midnight.vercel.app/) *(Live CompactForge Application on Preprod)*
+* **Product Pitch Deck** : [CompactForge Product Deck](https://docs.google.com/presentation/d/1prB6MAuPms73S8TNJqzjWTZ-r2PgxhrdArH_ocebhWo/edit?usp=sharing) *(Google Slide Link)*
 * **Documentation:** [https://compactforge-midnight.vercel.app/docs](https://compactforge-midnight.vercel.app/docs) *(Complete documentation for the CompactForge project)*
 * **Demo Video:** [Watch the CompactForge Demo on YouTube](https://youtu.be/uWtSPvXCc7Y) *(Watch the full demo)*
 * **X Profile Link:** [https://x.com/compactforgee](https://x.com/compactforgee) *(Follow us on X)*
