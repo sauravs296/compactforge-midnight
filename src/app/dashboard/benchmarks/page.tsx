@@ -1,3 +1,4 @@
+import { AutoRefresh } from "@/components/AutoRefresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +36,9 @@ export default async function BenchmarksPage() {
   const minMs = BENCHMARKS.length > 0 ? Math.min(...BENCHMARKS.map((b) => b.provingMs)) : 0;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="w-full">
+      <AutoRefresh intervalMs={10000} />
+      <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Proof Benchmarks</h1>
         <p className="text-muted-foreground">
@@ -164,6 +167,7 @@ export default async function BenchmarksPage() {
           </Table>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

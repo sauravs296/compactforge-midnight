@@ -1,3 +1,4 @@
+import { AutoRefresh } from "@/components/AutoRefresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Clock, FileCode, Rocket, CheckCircle2, XCircle } from "lucide-react";
@@ -48,7 +49,9 @@ export default async function DashboardOverview() {
   const successRate = ciRunsCount > 0 ? Math.round((successfulRuns / ciRunsCount) * 100) : 100;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="w-full">
+      <AutoRefresh intervalMs={10000} />
+      <div className="flex flex-col gap-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
         <p className="text-muted-foreground">
@@ -203,6 +206,7 @@ export default async function DashboardOverview() {
           </div>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }
