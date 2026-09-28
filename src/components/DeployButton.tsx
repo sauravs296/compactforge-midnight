@@ -57,7 +57,25 @@ const EXPLORER = "https://preprod.midnightexplorer.com/tx/";
  * Sufficient for deployment — private state is written fresh during deploy,
  * so nothing needs to be read from persistent storage.
  */
-function makeInMemoryPrivateStateProvider() {
+function makeLocalStoragePrivateStateProvider() {
+  const PREFIX_STATE = 'cf_state_';
+  const PREFIX_KEY = 'cf_key_';
+  let scopedAddress = null;
+  return {
+    setContractAddress(address) { scopedAddress = address.toString(); },
+    async set(privateStateId, state) { localStorage.setItem(PREFIX_STATE + scopedAddress + ':' + privateStateId, JSON.stringify({ _isUint8Array: state instanceof Uint8Array, data: state instanceof Uint8Array ? Array.from(state) : state })); },
+    async get(privateStateId) { const stored = localStorage.getItem(PREFIX_STATE + scopedAddress + ':' + privateStateId); if (!stored) return null; try { const p = JSON.parse(stored); return p._isUint8Array ? new Uint8Array(p.data) : p.data; } catch { return stored; } },
+    async getSigningKey(address) { const stored = localStorage.getItem(PREFIX_KEY + address.toString()); if (!stored) return null; try { const p = JSON.parse(stored); return p._isUint8Array ? new Uint8Array(p.data) : null; } catch { return null; } },
+    async setSigningKey(address, signingKey) { localStorage.setItem(PREFIX_KEY + address.toString(), JSON.stringify({ _isUint8Array: true, data: Array.from(signingKey) })); },
+    async removeSigningKey(address) { localStorage.removeItem(PREFIX_KEY + address.toString()); },
+    async clearSigningKeys() {}, 
+    async exportPrivateStates() { return ''; },
+    async importPrivateStates() { return { imported: 0, failed: 0 }; },
+    async exportSigningKeys() { return ''; },
+    async importSigningKeys() { return { imported: 0, failed: 0 }; },
+  };
+}
+function _DELETED_makeInMemoryPrivateStateProvider() {
   const states = new Map<string, unknown>();
   const keys   = new Map<string, Uint8Array>(); // contractAddress → signingKey
   let   scopedAddress: string | null = null;
@@ -258,7 +276,7 @@ export function DeployButton({ onDeployed }: { onDeployed?: (contractAddress: st
             return async () => null;
           },
         }),
-        privateStateProvider: makeInMemoryPrivateStateProvider(),
+        privateStateProvider: makeLocalStoragePrivateStateProvider(),
         walletProvider,
         zkConfigProvider,
         proofProvider,
