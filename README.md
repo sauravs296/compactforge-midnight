@@ -13,7 +13,7 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/github/actions/workflow/status/sauravs296/compactforge-midnight/contracts.yml?label=Compact%20Build" alt="Compact Build Status" />
+    <img src="https://img.shields.io/github/actions/workflow/status/sauravs296/compactforge-midnight/contracts.yml?label=Contract%20Validation" alt="Contract Validation Status" />
     <img src="https://img.shields.io/github/actions/workflow/status/sauravs296/compactforge-midnight/frontend.yml?label=Next.js%20Build" alt="Next.js Build Status" />
   </p>
 </div>
