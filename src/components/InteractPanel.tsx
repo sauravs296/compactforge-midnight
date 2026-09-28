@@ -11,13 +11,40 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const EXPLORER = "https://explorer.1am.xyz/tx/";
 
-// Dummy private state provider (in-memory)
-function makeInMemoryPrivateStateProvider() {
-  const states = new Map<string, unknown>();
+/**
+ * LocalStorage Private State Provider
+ * Persists zero-knowledge private state across page reloads and browser sessions.
+ * Crucial for multi-step ZK workflows where the user must prove state mutations sequentially.
+ */
+function makeLocalStoragePrivateStateProvider() {
+  const PREFIX = "cf_priv_state_";
   return {
-    async set(id: string, state: unknown) { states.set(id, state); },
-    async get(id: string) { return states.get(id) ?? null; },
-    async remove(id: string) { states.delete(id); },
+    async set(id: string, state: unknown) {
+      // state is typically a Uint8Array or serialized object in Midnight JS
+      let serialized: string;
+      if (state instanceof Uint8Array) {
+        serialized = JSON.stringify({ _isUint8Array: true, data: Array.from(state) });
+      } else {
+        serialized = JSON.stringify(state);
+      }
+      localStorage.setItem(PREFIX + id, serialized);
+    },
+    async get(id: string) {
+      const stored = localStorage.getItem(PREFIX + id);
+      if (!stored) return null;
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed._isUint8Array && Array.isArray(parsed.data)) {
+          return new Uint8Array(parsed.data);
+        }
+        return parsed;
+      } catch {
+        return stored; // Fallback if it wasn't valid JSON
+      }
+    },
+    async remove(id: string) {
+      localStorage.removeItem(PREFIX + id);
+    },
   };
 }
 
@@ -208,7 +235,7 @@ export function InteractPanel({ defaultAddress }: { defaultAddress: string }) {
 
       const providers = {
         publicDataProvider,
-        privateStateProvider: makeInMemoryPrivateStateProvider(),
+        privateStateProvider: makeLocalStoragePrivateStateProvider(),
         walletProvider,
         zkConfigProvider,
         proofProvider,
