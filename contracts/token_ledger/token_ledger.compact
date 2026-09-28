@@ -47,6 +47,11 @@ constructor(adminAddress: Bytes<32>) {
 
 // Derive the caller's on-chain address from their private key.
 // This is a pure function — it computes inside the ZK circuit, no chain write.
+// TODO: Currently a pure function placeholder. Once the Midnight stdlib
+// ships with `publicKey()` or `sha256()`, this should be used to securely 
+// derive identity. For now, the circuits below use `disclose(localSecretKey())` 
+// which treats the raw private key bytes as the public address. This is 
+// an acknowledged security anti-pattern for hackathon demo purposes only.
 pure circuit callerAddress(): Bytes<32> {
     return pad(32, "addr") as Bytes<32>; // placeholder; replace with publicKey() when stdlib version ships
 }
