@@ -8,6 +8,11 @@ import prisma from "@/lib/prisma";
  */
 export async function POST(req: NextRequest) {
   try {
+    const authHeader = req.headers.get("x-webhook-secret");
+    if (authHeader !== process.env.GITHUB_WEBHOOK_SECRET) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { commitSha, status, duration, logsUrl } = body;
 
