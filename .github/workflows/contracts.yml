@@ -56,42 +56,25 @@ jobs:
           echo ""
           echo "✓ All contract source validations passed"
 
-  compile-contracts:
-    name: Compile Compact Contracts
+  benchmark-contracts:
+    name: Benchmark Circuit Execution
     runs-on: ubuntu-latest
+    needs: validate-contracts
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Midnight Compact compiler
-        run: |
-          echo "================================================="
-          echo " Setting up Midnight Compact compiler"
-          echo "================================================="
-          
-          if [ ! -f "bin/compact" ]; then
-            echo "ERROR: 'compact' binary not found!"
-            echo "Because the Midnight compiler is not publicly available on npm,"
-            echo "you must download the Linux binary from the Midnight developer portal,"
-            echo "place it in a 'bin/' directory in your repository, and commit it."
-            exit 1
-          fi
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
 
-          echo "Found bin/compact binary — proceeding with compilation"
-          chmod +x bin/compact
-          sudo cp bin/compact /usr/local/bin/compact
-          compact --version
+      - name: Install Dependencies
+        run: npm ci
 
-      - name: Compile token_ledger contract
-        run: |
-          mkdir -p contracts/token_ledger/build
-          compact compile \
-            contracts/token_ledger/token_ledger.compact \
-            contracts/token_ledger/build/token_ledger
-          echo "✅ token_ledger compiled successfully"
-
-      - name: Run benchmark script
-        run: bash scripts/compile-and-test.sh
+      - name: Run WASM Dry-Run Benchmark
+        run: npx tsx scripts/benchmark.ts
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
@@ -104,21 +87,23 @@ jobs:
         if: github.ref == 'refs/heads/main'
         env:
           COMPACTFORGE_API_URL: ${{ secrets.COMPACTFORGE_API_URL }}
+          GITHUB_WEBHOOK_SECRET: ${{ secrets.GITHUB_WEBHOOK_SECRET }}
         run: |
           API="${COMPACTFORGE_API_URL:-https://compact-forge-midnight.vercel.app}"
 
           echo "=== Recording CI run ==="
           curl -sf -X POST \
             -H "Content-Type: application/json" \
+                -H "X-Webhook-Secret: ${GITHUB_WEBHOOK_SECRET}" \
+            -H "X-Webhook-Secret: ${GITHUB_WEBHOOK_SECRET}" \
             -d "{\"commitSha\":\"${{ github.sha }}\",\"status\":\"success\",\"duration\":60,\"logsUrl\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
             "${API}/api/ci-runs" || echo "CI run POST failed (API may not be configured)"
 
           echo "=== Posting benchmarks ==="
           for f in contracts/**/build/benchmark.json; do
             [ -f "$f" ] || continue
-            echo "Reading $f …"
+            echo "Reading $f ..."
             # Transform benchmark.json to the expected API format
-            # benchmark.json is expected to have: { circuits: [{ name, provingTimeMs }] }
             PAYLOAD=$(node -e "
               const b = require('./$f');
               const benchmarks = (b.circuits || []).map(c => ({

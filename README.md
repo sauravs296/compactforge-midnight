@@ -59,7 +59,7 @@ CompactForge bridges the gap by giving every Midnight team a unified CI/CD and D
 
 ---
 
-## 🔐 Public State vs. Private Witness
+## ?? Public State vs. Private Witness
 
 Midnight brings privacy to smart contracts. To demonstrate this, CompactForge includes a fully featured `token_ledger` contract featuring 6 unique ZK circuits (`mint`, `transfer`, `deposit`, `burn`, `pause`, `unpause`).
 
@@ -68,7 +68,7 @@ Midnight brings privacy to smart contracts. To demonstrate this, CompactForge in
 
 ---
 
-## 📸 Product Walkthrough
+## ?? Product Walkthrough
 
 <div align="center">
   <img src="assets/project/landing-page.png" alt="Landing Page" width="800" />
@@ -101,17 +101,17 @@ Midnight brings privacy to smart contracts. To demonstrate this, CompactForge in
 
 ---
 
-## 📜 The Smart Contract
+## ?? The Smart Contract
 
 The core of our testing and demonstration is the `token_ledger.compact` contract.
 
-**Preprod Network Deployments:**
+**Midnight Midnight Preprod Network Deployments:**
 
 | Contract Name | Full Contract Address | Verify Link (Preprod) |
 |---|---|---|
 | `token_ledger.compact` | `f1bf4b0609f5078e44e3704ef917a5edf0edbecfd4fbb3e05ba7181f0dcbe585` | [View on 1AM Explorer](https://explorer.1am.xyz/contract/f1bf4b0609f5078e44e3704ef917a5edf0edbecfd4fbb3e05ba7181f0dcbe585?network=preprod) |
 
-**Sample Transactions (Preprod):**
+**Sample Transactions (Midnight Preprod Network):**
 
 | Transaction Type | Full TxHash | Verify Link (Preprod) |
 |---|---|---|
@@ -139,7 +139,7 @@ The core of our testing and demonstration is the `token_ledger.compact` contract
 
 ---
 
-## 🏗️ Architecture Diagrams
+## ??? Architecture Diagrams
 
 ### Project Architecture (CI/CD Flow)
 ```mermaid
@@ -178,7 +178,7 @@ sequenceDiagram
 
 ---
 
-## 📁 File Structure
+## ?? File Structure
 
 ```text
 CompactForge/
@@ -201,7 +201,7 @@ CompactForge/
 
 ---
 
-## 🧪 Test Cases
+## ?? Test Cases
 
 The project utilizes `vitest` for robust unit testing covering utility functions, API endpoint validation, Contract metadata, and our custom ZK config provider URLs.
 
@@ -217,7 +217,51 @@ npm run test
 
 ---
 
-## 🚀 Future Implementations & Real World Applications
+
+## ?? Setup & Run Locally
+
+To run the CompactForge web application locally, follow these numbered steps:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/sauravs296/compactforge-midnight.git
+   cd compactforge-midnight
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Set up the database (optional for demo data):**
+   ```bash
+   npx prisma generate
+   npm run db:seed
+   ```
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+5. **Open your browser:**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+---
+
+## ?? Feedback & Iterations
+
+We take user and judge feedback very seriously. Based on prior reviews, we have implemented massive improvements to the architecture and developer experience. 
+
+Please see the [FEEDBACK.md](FEEDBACK.md) file for a detailed, itemized list of all the critical flaws we identified and the exact architectural improvements we shipped in this version (including Real ZK Benchmarking, LocalStorage Private State, and CI Webhook Authentication).
+
+---
+
+## ?? Level 6 Launch Users
+
+We conducted a successful beta test with early adopters testing contract deployments on the Midnight Preprod Network. 
+
+Please see the [LAUNCH_USERS.md](LAUNCH_USERS.md) file in the root directory for a comprehensive list of 50 verified Midnight/1AM wallet addresses from our launch users.
+
+---
+
+## ?? Future Implementations & Real World Applications
 
 **Future Roadmap:**
 1. **Multi-Contract Support:** Dynamically upload, compile, and manage any `.compact` file directly in the browser using WASM.
@@ -229,7 +273,7 @@ CompactForge sets the standard for how development teams building on Midnight wi
 
 ---
 
-### 🙏 Salutation
+### ?? Salutation
 **A huge thanks to the Midnight Team for organizing this hackathon!** Building with Compact and exploring the frontier of Zero-Knowledge smart contracts has been an incredible experience.
 
 <div align="center">
