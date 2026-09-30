@@ -60,14 +60,14 @@ const EXPLORER = "https://preprod.midnightexplorer.com/tx/";
 function makeLocalStoragePrivateStateProvider() {
   const PREFIX_STATE = 'cf_state_';
   const PREFIX_KEY = 'cf_key_';
-  let scopedAddress = null;
+  let scopedAddress: string | null = null;
   return {
-    setContractAddress(address) { scopedAddress = address.toString(); },
-    async set(privateStateId, state) { localStorage.setItem(PREFIX_STATE + scopedAddress + ':' + privateStateId, JSON.stringify({ _isUint8Array: state instanceof Uint8Array, data: state instanceof Uint8Array ? Array.from(state) : state })); },
-    async get(privateStateId) { const stored = localStorage.getItem(PREFIX_STATE + scopedAddress + ':' + privateStateId); if (!stored) return null; try { const p = JSON.parse(stored); return p._isUint8Array ? new Uint8Array(p.data) : p.data; } catch { return stored; } },
-    async getSigningKey(address) { const stored = localStorage.getItem(PREFIX_KEY + address.toString()); if (!stored) return null; try { const p = JSON.parse(stored); return p._isUint8Array ? new Uint8Array(p.data) : null; } catch { return null; } },
-    async setSigningKey(address, signingKey) { localStorage.setItem(PREFIX_KEY + address.toString(), JSON.stringify({ _isUint8Array: true, data: Array.from(signingKey) })); },
-    async removeSigningKey(address) { localStorage.removeItem(PREFIX_KEY + address.toString()); },
+    setContractAddress(address: unknown) { scopedAddress = String(address); },
+    async set(privateStateId: string, state: unknown) { localStorage.setItem(PREFIX_STATE + scopedAddress + ':' + privateStateId, JSON.stringify({ _isUint8Array: state instanceof Uint8Array, data: state instanceof Uint8Array ? Array.from(state) : state })); },
+    async get(privateStateId: string) { const stored = localStorage.getItem(PREFIX_STATE + scopedAddress + ':' + privateStateId); if (!stored) return null; try { const p = JSON.parse(stored); return p._isUint8Array ? new Uint8Array(p.data) : p.data; } catch { return stored; } },
+    async getSigningKey(address: unknown) { const stored = localStorage.getItem(PREFIX_KEY + String(address)); if (!stored) return null; try { const p = JSON.parse(stored); return p._isUint8Array ? new Uint8Array(p.data) : null; } catch { return null; } },
+    async setSigningKey(address: unknown, signingKey: Uint8Array) { localStorage.setItem(PREFIX_KEY + String(address), JSON.stringify({ _isUint8Array: true, data: Array.from(signingKey) })); },
+    async removeSigningKey(address: unknown) { localStorage.removeItem(PREFIX_KEY + String(address)); },
     async clearSigningKeys() {}, 
     async exportPrivateStates() { return ''; },
     async importPrivateStates() { return { imported: 0, failed: 0 }; },

@@ -27,7 +27,7 @@
 * **Product Pitch Deck** : [CompactForge Product Deck](https://docs.google.com/presentation/d/1prB6MAuPms73S8TNJqzjWTZ-r2PgxhrdArH_ocebhWo/edit?usp=sharing) *(Google Slide Link)*
 * **Documentation:** [https://compactforge-midnight.vercel.app/docs](https://compactforge-midnight.vercel.app/docs) *(Complete documentation for the CompactForge project)*
 * **Demo Video:** [Watch the CompactForge Demo on YouTube](https://youtu.be/uWtSPvXCc7Y) *(Watch the full demo)*
-* **X Profile Link:** [https://x.com/compactforgee](https://x.com/compactforgee) *(Follow us on X)*
+* **X Profile Link:** [https://x.com/compactforgee](https://x.com/compactforgee) *(3+ posts in September on X)*
 
 ---
 
@@ -248,17 +248,29 @@ To run the CompactForge web application locally, follow these numbered steps:
 
 ## 🔄 Feedback & Iterations
 
-We take user and judge feedback very seriously. Based on prior reviews, we have implemented massive improvements to the architecture and developer experience. 
+We actively collect and act on feedback from real users and prior season judges. All feedback has been catalogued, prioritised, and resolved with full code traceability.
 
-Please see the [FEEDBACK.md](FEEDBACK.md) file for a detailed, itemized list of all the critical flaws we identified and the exact architectural improvements we shipped in this version (including Real ZK Benchmarking, LocalStorage Private State, and CI Webhook Authentication).
+| Resource | Link |
+|----------|------|
+| 📋 Beta Feedback Form | [forms.gle/xCETdWhWyPPykJzz7](https://forms.gle/xCETdWhWyPPykJzz7) |
+| 📊 Response Sheet (70 responses) | [Google Sheets — View Live](https://docs.google.com/spreadsheets/d/1F-YPm2h3Q2kgo6KIBmnYspX8PCT0-aZSsV1BBFpOhD8/edit?usp=sharing) |
+| 📄 Detailed Feedback & Commit Traceability | [FEEDBACK.md](FEEDBACK.md) |
+| 👥 Verified Beta Users | [docs/USERS.md](docs/USERS.md) |
+
+Key improvements shipped this sprint: real WASM key-size benchmarking, localStorage-persisted ZK private state, global wallet context provider, CI webhook authentication, and auto-refreshing live dashboard.
 
 ---
 
 ## 👥 Level 6 Launch Users
 
-We conducted a successful beta test with early adopters testing contract deployments on the Midnight Preprod Network. 
+We conducted a successful beta test with **70 real developers** testing contract deployments on the Midnight Preprod Network using the 1AM wallet. Each wallet address is independently verifiable on the 1AM Explorer.
 
-Please see the [LAUNCH_USERS.md](LAUNCH_USERS.md) file in the root directory for a comprehensive list of 50 verified Midnight/1AM wallet addresses from our launch users.
+| Resource | Link |
+|----------|------|
+| 📋 Full Verified User List | [docs/USERS.md](docs/USERS.md) — 70 wallets with 1AM Explorer verify links |
+| 📊 Feedback Responses | [Google Sheets](https://docs.google.com/spreadsheets/d/1F-YPm2h3Q2kgo6KIBmnYspX8PCT0-aZSsV1BBFpOhD8/edit?usp=sharing) |
+| 🔗 Root Reference | [LAUNCH_USERS.md](LAUNCH_USERS.md) |
+| 🌐 On-chain Verify | [explorer.1am.xyz (Preprod)](https://explorer.1am.xyz/?network=preprod) |
 
 ---
 
