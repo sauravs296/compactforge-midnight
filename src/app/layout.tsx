@@ -34,6 +34,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { ClientProviders } from "@/components/ClientProviders";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -45,8 +47,10 @@ export default function RootLayout({
       className={`${inter.variable} ${syne.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster theme="dark" position="top-right" richColors closeButton />
+        <ClientProviders>
+          {children}
+          <Toaster theme="dark" position="top-right" richColors closeButton />
+        </ClientProviders>
       </body>
     </html>
   );
