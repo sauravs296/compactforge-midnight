@@ -74,7 +74,7 @@ jobs:
         run: npm ci
 
       - name: Run WASM Dry-Run Benchmark
-        run: npx tsx scripts/benchmark.ts
+        run: node scripts/wasm-benchmark.mjs
 
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
