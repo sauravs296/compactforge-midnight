@@ -257,11 +257,8 @@ function ProductMockup({ recentRuns }: { recentRuns: { sha: string; status: stri
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 export default async function MarketingPage() {
   // Fetch real CI runs for the product mockup hero widget
-  let mockupRuns: { sha: string; status: string }[] = [
-    { sha: "a3f9c2d", status: "success" },
-    { sha: "9b1e4fa", status: "success" },
-    { sha: "c82d7e0", status: "success" },
-  ];
+  // Starts empty — populated from the real DB below; no hardcoded fallback
+  let mockupRuns: { sha: string; status: string }[] = [];
   try {
     const { PrismaClient } = await import("@prisma/client");
     const p = new PrismaClient();

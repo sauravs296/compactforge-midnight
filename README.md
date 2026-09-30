@@ -59,7 +59,7 @@ CompactForge bridges the gap by giving every Midnight team a unified CI/CD and D
 
 ---
 
-## ?? Public State vs. Private Witness
+## 🔒 Public State vs. Private Witness
 
 Midnight brings privacy to smart contracts. To demonstrate this, CompactForge includes a fully featured `token_ledger` contract featuring 6 unique ZK circuits (`mint`, `transfer`, `deposit`, `burn`, `pause`, `unpause`).
 
@@ -68,7 +68,7 @@ Midnight brings privacy to smart contracts. To demonstrate this, CompactForge in
 
 ---
 
-## ?? Product Walkthrough
+## 🚀 Product Walkthrough
 
 <div align="center">
   <img src="assets/project/landing-page.png" alt="Landing Page" width="800" />
@@ -101,7 +101,7 @@ Midnight brings privacy to smart contracts. To demonstrate this, CompactForge in
 
 ---
 
-## ?? The Smart Contract
+## 📜 The Smart Contract
 
 The core of our testing and demonstration is the `token_ledger.compact` contract.
 
@@ -109,13 +109,14 @@ The core of our testing and demonstration is the `token_ledger.compact` contract
 
 | Contract Name | Full Contract Address | Verify Link (Preprod) |
 |---|---|---|
-| `token_ledger.compact` | `f1bf4b0609f5078e44e3704ef917a5edf0edbecfd4fbb3e05ba7181f0dcbe585` | [View on 1AM Explorer](https://explorer.1am.xyz/contract/f1bf4b0609f5078e44e3704ef917a5edf0edbecfd4fbb3e05ba7181f0dcbe585?network=preprod) |
+| `token_ledger.compact` | `2eced748b5a7108afc0e47abd514547582e254560c75af4018c9aefc5c289da9` | [View on 1AM Explorer](https://explorer.1am.xyz/contract/2eced748b5a7108afc0e47abd514547582e254560c75af4018c9aefc5c289da9?network=preprod) |
 
 **Sample Transactions (Midnight Preprod Network):**
 
 | Transaction Type | Full TxHash | Verify Link (Preprod) |
 |---|---|---|
-| Contract Deployment | `505092cdae10713eeb5a4f47af05da3414b92afa7a81a8c1b7153d47e68e090f` | [View on 1AM Explorer](https://explorer.1am.xyz/tx/505092cdae10713eeb5a4f47af05da3414b92afa7a81a8c1b7153d47e68e090f?network=preprod) |
+| Contract Deployment (Sept 2026 Update) | `7db1bc25cb1c2f998f02f95676b8d3c72fc031e1f761daf3f8170ff9345c3e38` | [View on 1AM Explorer](https://explorer.1am.xyz/tx/7db1bc25cb1c2f998f02f95676b8d3c72fc031e1f761daf3f8170ff9345c3e38?network=preprod) |
+| Initial Contract Deployment | `505092cdae10713eeb5a4f47af05da3414b92afa7a81a8c1b7153d47e68e090f` | [View on 1AM Explorer](https://explorer.1am.xyz/tx/505092cdae10713eeb5a4f47af05da3414b92afa7a81a8c1b7153d47e68e090f?network=preprod) |
 | Sample ZK Deposit | `a7eccdd4b6027d1a222ef43a40de1dce6cbf56ecadaa0d93093b7b9ffdc02406` | [View on 1AM Explorer](https://explorer.1am.xyz/tx/a7eccdd4b6027d1a222ef43a40de1dce6cbf56ecadaa0d93093b7b9ffdc02406?network=preprod) |
 
 <br>
@@ -139,7 +140,7 @@ The core of our testing and demonstration is the `token_ledger.compact` contract
 
 ---
 
-## ??? Architecture Diagrams
+## 🏗️ Architecture Diagrams
 
 ### Project Architecture (CI/CD Flow)
 ```mermaid
@@ -178,7 +179,7 @@ sequenceDiagram
 
 ---
 
-## ?? File Structure
+## 📂 File Structure
 
 ```text
 CompactForge/
@@ -201,7 +202,7 @@ CompactForge/
 
 ---
 
-## ?? Test Cases
+## 🧪 Test Cases
 
 The project utilizes `vitest` for robust unit testing covering utility functions, API endpoint validation, Contract metadata, and our custom ZK config provider URLs.
 
@@ -218,7 +219,7 @@ npm run test
 ---
 
 
-## ?? Setup & Run Locally
+## ⚙️ Setup & Run Locally
 
 To run the CompactForge web application locally, follow these numbered steps:
 
@@ -245,7 +246,7 @@ To run the CompactForge web application locally, follow these numbered steps:
 
 ---
 
-## ?? Feedback & Iterations
+## 🔄 Feedback & Iterations
 
 We take user and judge feedback very seriously. Based on prior reviews, we have implemented massive improvements to the architecture and developer experience. 
 
@@ -253,7 +254,7 @@ Please see the [FEEDBACK.md](FEEDBACK.md) file for a detailed, itemized list of 
 
 ---
 
-## ?? Level 6 Launch Users
+## 👥 Level 6 Launch Users
 
 We conducted a successful beta test with early adopters testing contract deployments on the Midnight Preprod Network. 
 
@@ -261,7 +262,39 @@ Please see the [LAUNCH_USERS.md](LAUNCH_USERS.md) file in the root directory for
 
 ---
 
-## ?? Future Implementations & Real World Applications
+## 📦 September 2026 Updates
+
+This section documents all major improvements shipped during the **September 2026 sprint**, in direct response to prior season feedback and beta user testing.
+
+### ✅ Implemented
+
+| # | Item | Description | Commit |
+|---|------|-------------|--------|
+| FB-02 | Remove Mock Compiler | CI pipeline reframed as Contract Validation; removed fake `bin/compact` script | [ed1305e](https://github.com/sauravs296/compactforge-midnight/commit/ed1305e) |
+| FB-03 | Real Benchmarks | `scripts/wasm-benchmark.mjs` reads actual `.prover` + `.bzkir` file sizes for real proof-time estimation | [fdcebf7](https://github.com/sauravs296/compactforge-midnight/commit/fdcebf7) |
+| FB-05 | callerAddress Fix | Security limitation acknowledged with explicit TODO; placeholder pending stdlib update | [51d0d6a](https://github.com/sauravs296/compactforge-midnight/commit/51d0d6a) |
+| FB-06 | Global Wallet Context | `WalletContext.tsx` + `ClientProviders.tsx` � app-wide persistent wallet connection | [0963cd4](https://github.com/sauravs296/compactforge-midnight/commit/0963cd4) |
+| FB-07 | Seed Data Script | `prisma/seed.ts` populates DB with realistic CI runs, benchmark curves, and deployments | [4d17cbe](https://github.com/sauravs296/compactforge-midnight/commit/4d17cbe) |
+| FB-08 | LocalStorage Private State | ZK private state backed by localStorage � survives page refresh across sessions | [80e08fa](https://github.com/sauravs296/compactforge-midnight/commit/80e08fa) |
+| FB-09 | PROPOSAL.md Rewrite | Fixed emojis; rewrote as developer pain-story narrative with "Why Now?" section | [87d2049](https://github.com/sauravs296/compactforge-midnight/commit/87d2049) |
+| FB-10 | Live Dashboard Auto-Refresh | `AutoRefresh` polls every 10s; dashboard updates automatically on new CI data | [0465c71](https://github.com/sauravs296/compactforge-midnight/commit/0465c71) |
+| FB-12 | Webhook Authentication | `GITHUB_WEBHOOK_SECRET` header required on all POST endpoints | [c114566](https://github.com/sauravs296/compactforge-midnight/commit/c114566) |
+| FB-13 | Badge Label Fix | CI badge renamed to "Contract Validation" for accuracy | [5b41593](https://github.com/sauravs296/compactforge-midnight/commit/5b41593) |
+| FB-14 | Removed Dummy Comment | Removed `// Dummy private state provider` comment from InteractPanel | [1b1f99a](https://github.com/sauravs296/compactforge-midnight/commit/1b1f99a) |
+| FB-15 | 70 Beta Users | Structured beta with 70 developers; verified wallets in `docs/USERS.md` | [c4fff58](https://github.com/sauravs296/compactforge-midnight/commit/c4fff58) |
+
+### 🔄 Planned for Next Sprint
+
+| # | Item | Description |
+|---|------|-------------|
+| FB-01 | `forge_registry.compact` | Replace token_ledger with a ZK-based contract registry native to CompactForge |
+| FB-04 | Multi-Contract Support | Bring-your-own-.compact file: repo registration, webhook config, multi-tenant dashboard |
+| FB-11 | `callerAddress()` Integration | Properly derive caller identity once Midnight stdlib ships `publicKey()` |
+| FB-16 | Architecture Refactor | Split `wallet.ts` into `providers.ts`, `contracts.ts`, `types.ts` service layers |
+
+---
+
+## 🔮 Future Implementations & Real World Applications
 
 **Future Roadmap:**
 1. **Multi-Contract Support:** Dynamically upload, compile, and manage any `.compact` file directly in the browser using WASM.
@@ -273,7 +306,7 @@ CompactForge sets the standard for how development teams building on Midnight wi
 
 ---
 
-### ?? Salutation
+### 👋 Salutation
 **A huge thanks to the Midnight Team for organizing this hackathon!** Building with Compact and exploring the frontier of Zero-Knowledge smart contracts has been an incredible experience.
 
 <div align="center">

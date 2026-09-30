@@ -3,7 +3,7 @@ config()
 
 async function main() {
   const { default: prisma } = await import('../src/lib/prisma')
-  console.log('Seeding database with demo data...')
+  console.log('Seeding database with initial CompactForge platform data...')
 
   await prisma.deployment.deleteMany()
   await prisma.benchmark.deleteMany()
@@ -15,13 +15,13 @@ async function main() {
   await prisma.user.deleteMany()
   await prisma.organization.deleteMany()
 
-  // 1. Create a dummy organization and user
+  // 1. Create the CompactForge demo organization and admin user
   const org = await prisma.organization.create({
     data: {
-      name: 'Midnight Demo Org',
+      name: 'CompactForge Platform',
       projects: {
         create: {
-          name: 'Midnight Hackathon Demo',
+          name: 'CompactForge Midnight CI',
           repository: 'sauravs296/compactforge-midnight',
           contracts: {
             create: {
@@ -49,8 +49,8 @@ async function main() {
 
   const user = await prisma.user.create({
     data: {
-      email: 'demo@compactforge.app',
-      name: 'Demo User',
+      email: 'admin@compactforge.app',
+      name: 'CompactForge Admin',
       organizationId: org.id,
       wallets: {
         create: {
