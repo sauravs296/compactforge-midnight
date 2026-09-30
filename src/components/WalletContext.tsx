@@ -22,7 +22,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkConnection = async () => {
-      if (typeof window !== "undefined" && (window as any).midnight) {
+      if (typeof window !== "undefined" && (window as unknown as { midnight: unknown }).midnight) {
         const saved = sessionStorage.getItem("midnight_wallet_address");
         if (saved) {
           try {

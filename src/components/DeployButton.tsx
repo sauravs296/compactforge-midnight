@@ -75,42 +75,7 @@ function makeLocalStoragePrivateStateProvider() {
     async importSigningKeys() { return { imported: 0, failed: 0 }; },
   };
 }
-function _DELETED_makeInMemoryPrivateStateProvider() {
-  const states = new Map<string, unknown>();
-  const keys   = new Map<string, Uint8Array>(); // contractAddress → signingKey
-  let   scopedAddress: string | null = null;
 
-  return {
-    setContractAddress(address: { toString(): string }) {
-      scopedAddress = address.toString();
-    },
-    async set(privateStateId: string, state: unknown): Promise<void> {
-      const k = `${scopedAddress}:${privateStateId}`;
-      states.set(k, state);
-    },
-    async get(privateStateId: string): Promise<unknown | null> {
-      const k = `${scopedAddress}:${privateStateId}`;
-      return states.get(k) ?? null;
-    },
-    async getSigningKey(address: { toString(): string }): Promise<Uint8Array | null> {
-      return keys.get(address.toString()) ?? null;
-    },
-    async setSigningKey(address: { toString(): string }, signingKey: Uint8Array): Promise<void> {
-      keys.set(address.toString(), signingKey);
-    },
-    async removeSigningKey(address: { toString(): string }): Promise<void> {
-      keys.delete(address.toString());
-    },
-    async clearSigningKeys(): Promise<void> {
-      keys.clear();
-    },
-    // Export/import stubs — not needed for deployment
-    async exportPrivateStates() { return ""; },
-    async importPrivateStates() { return { imported: 0, failed: 0 }; },
-    async exportSigningKeys() { return ""; },
-    async importSigningKeys() { return { imported: 0, failed: 0 }; },
-  };
-}
 
 // ── ZK Config Provider (loads keys from /api/contracts/token_ledger/…) ───────
 
