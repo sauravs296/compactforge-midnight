@@ -247,12 +247,6 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      {/* "?"? Demo Mode Banner "?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"?"? */}
-      <div className="bg-primary/20 text-primary border-b border-primary/30 px-4 py-2 text-xs font-medium flex items-center justify-center gap-2">
-        <Zap className="h-3.5 w-3.5" />
-        Viewing Seeded Demo Data. Connect your 1AM Wallet to deploy and interact with your own contracts on Midnight Preprod.
-      </div>
-
       <div className="flex flex-1">
         <Sidebar />
 
