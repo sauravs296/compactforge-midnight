@@ -3,12 +3,12 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { connectWallet, getUnshieldedAddress } from "@/lib/midnight/wallet";
 import { toast } from "sonner";
-import type { DAppConnectorAPI } from "@midnight-ntwrk/dapp-connector-api";
+import type { ConnectedAPI } from "@midnight-ntwrk/dapp-connector-api";
 
 interface WalletContextType {
   address: string | null;
   isConnecting: boolean;
-  walletApi: DAppConnectorAPI | null;
+  walletApi: ConnectedAPI | null;
   connect: () => Promise<void>;
   disconnect: () => void;
 }
@@ -18,7 +18,7 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
-  const [walletApi, setWalletApi] = useState<DAppConnectorAPI | null>(null);
+  const [walletApi, setWalletApi] = useState<ConnectedAPI | null>(null);
 
   useEffect(() => {
     const checkConnection = async () => {
